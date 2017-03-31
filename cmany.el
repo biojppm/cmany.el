@@ -751,6 +751,20 @@ directories should be placed"
     )
   )
 
+;;;###autoload
+(defun cmany-shell-at-work ()
+  "open a shell in the current work dir"
+  (interactive)
+  (assert (file-exists-p cmany-work-dir))
+  (if (not))
+  (let ((d default-directory))
+    (cmany-save-configs)
+    (cd cmany-work-dir)
+    (shell)
+    (cd d)
+    )
+  )
+
 ;;-----------------------------------------------------------------------------
 
 ;;;###autoload
