@@ -699,6 +699,47 @@ directories should be placed"
 
 ;;-----------------------------------------------------------------------------
 ;;;###autoload
+(defun cmany-run (cmd &optional workdir)
+  "run the current target"
+  (interactive
+   (list
+    (read-string
+     "enter cmd: "
+     (if (cmany--str-not-empty 'cmany--last-run)
+         (progn cmany--last-run)
+         (progn (concat cmany-build-dir cmany-target))
+       )
+     )
+    (ido-read-directory-name "work dir: " (cmany--work-dir-or-default))
+    )
+   )
+  (setq cmany--last-run cmd)
+  (when (not workdir)
+    (setq workdir (cmany--work-dir-or-default))
+    )
+  (if cmany-build-before-run
+      (setq cmd (concat
+                 "cd " cmany-proj-dir " ; " (cmany--format-cmd "build" cmany-target)
+                 " && cd " workdir " ; " cmd
+                 )
+            )
+    (setq cmd (concat "cd " workdir " ; "  cmd))
+    )
+  (compile cmd)
+  )
+
+;;;###autoload
+(defun cmany-run-again()
+  (interactive)
+  (message "AGAIN")
+  (if (cmany--str-not-empty 'cmany--last-run)
+      (cmany-run cmany--last-run)
+    (error "cmany-run was not run yet")
+    )
+  )
+
+;;-----------------------------------------------------------------------------
+;;;###autoload
 (defun cmany-edit-cache ()
   "interactively edit the cmake cache for the current build
   directory using either ccmake or cmake-gui"
