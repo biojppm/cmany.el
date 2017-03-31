@@ -227,18 +227,19 @@ directories should be placed"
      )
   )
 
-(defun cmany--has-proj-dir ()
-  "is cmany-proj-dir already set"
-  (and (boundp 'cmany-proj-dir)
-       (not (equal cmany-proj-dir nil))
-       (not (string-equal cmany-proj-dir "")))
+(defun cmany--str-not-empty (symbol)
+  "is there a smarter way to check this?"
+  (and (boundp symbol)
+       (not (equal (symbol-value symbol) nil))
+       (not (string-equal (symbol-value symbol) ""))
+       )
   )
 
-(defun cmany--has-build-dir ()
-  "is cmany-build-dir already set"
-  (and (boundp 'cmany-build-dir)
-       (not (equal cmany-build-dir nil))
-       (not (string-equal cmany-build-dir "")))
+(defun cmany--var-not-nil (symbol)
+  "is there a smarter way to check this?"
+  (and (boundp symbol)
+       (not (equal (symbol-value symbol) nil))
+       )
   )
 
 ;;-----------------------------------------------------------------------------
@@ -301,7 +302,7 @@ directories should be placed"
   )
 
 (defun cmany--get-default-proj-dir ()
-  (if (cmany--has-proj-dir)
+  (if (cmany--str-not-empty 'cmany-proj-dir)
       ;; if there's a current cmany-proj-dir, use it
       (progn
         (cmany--log "cmany-proj-dir already defined: %s" cmany-proj-dir)
@@ -322,14 +323,36 @@ directories should be placed"
     )
   )
 
+(defun cmany--exec-prompt-proj-dir ()
+  (interactive)
+  (let* (
+         (pd (cmany--get-default-proj-dir))
+         (dn (file-name-directory pd))
+         (bn (file-name-base pd))
+         (pdr (ido-read-directory-name "cmany proj dir: " dn bn nil bn))
+         )
+    (cmany--log "proj dir input: %s" pdr)
+    (file-name-as-directory pdr)
+    )
+  )
+
 (defun cmany--exec-prompt-build-dir ()
   (interactive)
   (let* ((bd (cmany--guess-build-dir))
-         (pfx (file-name-directory bd))
-         (bdr (ido-read-directory-name "cmany build dir: " pfx bd nil bd)))
-    (cmany--log "build directory input: %s" bdr)
-    bdr
+         (dn (file-name-directory bd))
+         (bn (file-name-base pd))
+         (bdr (ido-read-directory-name "cmany build dir: " dn bn nil bn))
+         )
+    (cmany--log "build dir input: %s" bdr)
+    (file-name-as-directory bdr)
     )
+  )
+
+(defun cmany--work-dir-or-default ()
+  (if (cmany--str-not-empty 'cmany-work-dir)
+      cmany-work-dir
+      cmany-build-dir
+      )
   )
 
 ;;-----------------------------------------------------------------------------
@@ -382,8 +405,7 @@ directories should be placed"
 (defun cmany-load-configs-if-none ()
   "loads configs if they are not yet available"
   (interactive)
-  (when (or (not (boundp 'cmany--configs))
-            (equal cmany--configs nil))
+  (when (not (cmany--var-not-nil 'cmany--configs))
     (cmany-load-configs)
     )
   )
@@ -456,8 +478,7 @@ directories should be placed"
 (defun cmany-set-proj-dir (&optional dir no-save)
   "set the project dir used by cmany"
   (interactive
-   (list (ido-read-directory-name
-          "cmany proj dir: " (cmany--get-default-proj-dir))
+   (list (call-interactively 'cmany--exec-prompt-proj-dir)
          nil))
   (cmany-load-configs-if-none)
   (cmany--log "set proj dir: %s" dir)
@@ -470,8 +491,7 @@ directories should be placed"
 (defun cmany-set-build-dir (&optional dir no-save)
   "set the build dir used by cmany"
   (interactive
-   (list (file-name-as-directory
-          (call-interactively 'cmany--exec-prompt-build-dir))
+   (list (call-interactively 'cmany--exec-prompt-build-dir)
          nil))
   (cmany-load-configs-if-none)
   (cmany--log "set build dir: %s" dir)
@@ -516,7 +536,7 @@ directories should be placed"
    (list
     (read-string
      "enter configure cmd: "
-     (if (and (boundp 'cmany--last-configure) (not (string-equal cmany--last-configure "")))
+     (if (cmany--str-not-empty 'cmany--last-configure)
          (progn cmany--last-configure)
          (progn (cmany--format-cmd "configure"))
          )
@@ -533,7 +553,7 @@ directories should be placed"
 ;;;###autoload
 (defun cmany-configure-again()
   (interactive)
-  (if (and (boundp 'cmany--last-configure) (not (string-equal cmany--last-configure "")))
+  (if (cmany--str-not-empty 'cmany--last-configure)
       (cmany-configure cmany--last-configure)
     (error "cmany-configure was not run yet")
     )
@@ -547,7 +567,7 @@ directories should be placed"
    (list
     (read-string
      "enter build cmd: "
-     (if (and (boundp 'cmany--last-build) (not (string-equal cmany--last-build "")))
+     (if (cmany--str-not-empty 'cmany--last-build)
          (progn cmany--last-build)
          (progn (cmany--format-cmd "build" cmany-target))
          )
@@ -564,7 +584,7 @@ directories should be placed"
 ;;;###autoload
 (defun cmany-build-again()
   (interactive)
-  (if (and (boundp 'cmany--last-build) (not (string-equal cmany--last-build "")))
+  (if (cmany--str-not-empty 'cmany--last-build)
       (cmany-build cmany--last-build)
     (error "cmany-build was not run yet")
     )
