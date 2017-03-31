@@ -124,6 +124,8 @@ directories should be placed"
      (define-key map (kbd "C-c m c") 'cmany-configure-again)
      (define-key map (kbd "C-c m B") 'cmany-build)
      (define-key map (kbd "C-c m b") 'cmany-build-again)
+     (define-key map (kbd "C-c m R") 'cmany-run)
+     (define-key map (kbd "C-c m r") 'cmany-run-again)
      (define-key map (kbd "C-c m G") 'cmany-debug)
      (define-key map (kbd "C-c m g") 'cmany-debug-again)
 
@@ -142,25 +144,27 @@ directories should be placed"
   '("cmany"
     ;;["Documentation" cmany-doc :help "Get documentation for symbol at point"]
     ;;["Run Tests" cmany-test :help "Run test at point, or all tests in the project"]
-    ["Configure" cmany-configure :keys "C-c m C" :help "call cmany configure using the current project params"]
-    ["Configure again" cmany-configure-again :keys "C-c m c" :help "call cmany configure using the current project params"]
-    ["Build" cmany-build :keys "C-c m B" :help "call cmany build using the current project params"]
-    ["Build again" cmany-build-again :keys "C-c m b" :help "call cmany build using the current project params"]
-    ["Debug" cmany-debug :keys "C-c m G" :help "open a gdb session with the current target"]
-    ["Debug-again" cmany-debug-again :keys "C-c m g" :help "open a gdb session with the current target"]
-    ["Edit cache" cmany-edit-cache :keys "C-c m e" :help "edit the cmake cache using the current project params"]
-    ["Open shell: proj dir" cmany-shell-at-proj :keys "C-c m s p" :help "open a shell session at the current project directory"]
-    ["Open shell: build dir" cmany-shell-at-build :keys "C-c m s d" :help "open a shell session at the current build directory"]
+    ["Configure"             cmany-configure       :keys "C-c m C"   :help "call cmany configure using the current project params"]
+    ["Configure again"       cmany-configure-again :keys "C-c m c"   :help "call cmany configure using the settings of the previous configure"]
+    ["Build"                 cmany-build           :keys "C-c m B"   :help "call cmany build using the current project params"]
+    ["Build again"           cmany-build-again     :keys "C-c m b"   :help "call cmany build using the settings of the previous build"]
+    ["Run"                   cmany-run             :keys "C-c m R"   :help "run the current active target"]
+    ["Run again"             cmany-run-again       :keys "C-c m r"   :help "run the current active target using the settings of the previous run"]
+    ["Debug"                 cmany-debug           :keys "C-c m G"   :help "open a gdb session with the current target"]
+    ["Debug-again"           cmany-debug-again     :keys "C-c m g"   :help "open a gdb session with the current target using the settings of the previous debug"]
+    ["Edit cache"            cmany-edit-cache      :keys "C-c m e"   :help "edit the cmake cache using the current project params"]
+    ["Open shell: proj dir"  cmany-shell-at-proj   :keys "C-c m s p" :help "open a shell session at the current project directory"]
+    ["Open shell: build dir" cmany-shell-at-build  :keys "C-c m s d" :help "open a shell session at the current build directory"]
+    ["Open shell: work dir"  cmany-shell-at-work   :keys "C-c m s w" :help "open a shell session at the current work directory"]
     "---"
     ("Project params"
-    ;;["Documentation" cmany-doc :help "Get documentation for symbol at point"]
-    ;;["Run Tests" cmany-test :help "Run test at point, or all tests in the project"]
-    ["Wizard" cmany-wizard :keys "C-c m ?" :help "Run an interactive wizard to configure the project params"]
-    ["Restore or guess" cmany-test :keys "C-c m !" :help "Restore project parameters from a previous session, or guess if no session exists"]
-    ["Set project directory" cmany-set-proj-dir :keys "C-c m P" :help "Set the current project directory"]
-    ["Set build directory" cmany-set-build-dir :keys "C-c m D" :help "Set the current build directory"]
-    ["Set target" cmany-set-target :keys "C-c m T" :help "Set the current target"]
-    ["Set command" cmany-set-target :keys "C-c m K" :help "Set the current cmany command"]
+    ["Wizard"                cmany-wizard        :keys "C-c m ?" :help "Run an interactive wizard to configure the project params"]
+    ["Restore or guess"      cmany-test          :keys "C-c m !" :help "Restore project parameters from a previous session, or guess if no session exists"]
+    ["Set project directory" cmany-set-proj-dir  :keys "C-c m P" :help "Set the current project directory"]
+    ["Set build directory"   cmany-set-build-dir :keys "C-c m D" :help "Set the current build directory"]
+    ["Set target"            cmany-set-target    :keys "C-c m T" :help "Set the current target"]
+    ["Set work directory"    cmany-set-work-dir  :keys "C-c m W" :help "Set the current work directory"]
+    ["Set command"           cmany-set-target    :keys "C-c m K" :help "Set the current cmany command"]
     ["rtags: announce directory" cmany-rtags-announce-build-dir :keys "C-c m A" :help "Announce a build directory to the rtags daemon"])
     )
   )
