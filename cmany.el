@@ -67,8 +67,8 @@ directories should be placed"
   :safe #'stringp
   )
 
-(defcustom cmany-build-before-debug 1
-  "Whether cmany should do a build before starting a debug."
+(defcustom cmany-build-before-run 1
+  "Whether cmany should build the target before running it."
   :group 'cmany
   :type 'boolean
   :safe #'booleanp
@@ -538,7 +538,7 @@ directories should be placed"
 
 ;;;###autoload
 (defun cmany-set-target (&optional tgt no-save)
-  "set the current active target for building and debugging"
+  "set the current active target for building and running/debugging"
   (interactive
    (list (ido-completing-read
           "cmany current target: "
@@ -555,10 +555,7 @@ directories should be placed"
 (defun cmany-set-work-dir (&optional dir no-save)
   "set the work directory for the current active target"
   (interactive
-   (list (ido-read-directory-name
-          "set work dir: "
-          (if (boundp 'cmany-work-dir) cmany-work-dir cmany-build-dir)
-          nil nil cmany-target)
+   (list (call-interactively 'cmany--exec-prompt-work-dir)
          nil))
   (cmany-load-configs-if-none)
   (cmany--log "set work dir: %s" dir)
@@ -629,30 +626,72 @@ directories should be placed"
   )
 
 ;;-----------------------------------------------------------------------------
+
 ;;;###autoload
-(defun cmany-debug (cmd)
+(defun cmany-debug (cmd &optional workdir)
   "debug the current target"
   (interactive
    (list
     (read-string
      "enter gdb cmd: "
-     (if (and (boundp 'cmany--last-debug) (not (string-equal cmany--last-debug "")))
+     (if (cmany--str-not-empty 'cmany--last-debug)
          (progn cmany--last-debug)
          (progn (format "gdb -i=mi %s" (concat cmany-build-dir cmany-target)))
          )
-     )))
-  (setq cmany--last-debug cmd)
-  (if cmany-build-before-debug
-      (cmany-build (cmany--format-cmd "build" cmany-target))
-    (cmany-save-configs)
+     )
+    (let* ((def (cmany--work-dir-or-default))
+           (dn (file-name-directory def))
+           (bn (file-name-base def)))
+      (ido-read-directory-name "work dir: " dn bn nil bn)
+      )
     )
-  (call-interactively (gdb cmd))
+   )
+  (cmany-save-configs)
+  (setq cmany--last-debug cmd)
+  (if (not workdir)
+      (setq workdir cmany-build-dir))
+  (if cmany-build-before-run
+      (progn
+        (setq cmany--dbg-work-dir workdir)
+        (setq cmany--dbg-cmd cmd)
+        ;; WTF??? when this is uncommented our function never gets called.
+        ;; gotta learn why.
+        ;;(setq cmany--dbg-old-fn (symbol-function compilation-exit-message-function))
+        (setq compilation-exit-message-function 'cmany--dbg-after-compile)
+        (compile (concat "cd " cmany-proj-dir " ; " (cmany--format-cmd "build" cmany-target)))
+        ;;(setq compilation-exit-message-function cmany--dbg-old-fn)
+        )
+    (progn
+      (let ((d default-directory))
+        (cd workdir)
+        (call-interactively (gdb cmpcmd))
+         (cd d)
+          )
+      )
+    )
+  )
+
+(defun cmany--dbg-after-compile (status code msg)
+  (cmany--log "compilation finished with status %s" status)
+  (cmany--log "compilation finished with code %d" code)
+  (cmany--log "compilation finished with msg %s" msg)
+  (if (and (eq status 'exit) (zerop code))
+      (progn
+        (let ((d default-directory))
+          (cd cmany--dbg-work-dir)
+          (gdb cmany--dbg-cmd)
+          (cd d)
+          )
+        )
+    (progn
+      (tooltip-show "\n            :-(            \n\nCompilation failed.\n"))
+    )
   )
 
 ;;;###autoload
 (defun cmany-debug-again()
   (interactive)
-  (if (and (boundp 'cmany--last-debug) (not (string-equal cmany--last-debug "")))
+  (if (cmany--str-not-empty 'cmany--last-debug)
       (cmany-debug cmany--last-debug)
     (error "cmany-debug was not run yet")
     )
