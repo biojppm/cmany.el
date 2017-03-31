@@ -94,9 +94,14 @@ directories should be placed"
   "The current active target"
   )
 
+(defvar cmany-work-dir nil
+  "The directory where the current active target should be debugged/run."
+  )
+
 (defconst cmany-cmd-default "cmany {cmd} -E -c clang++ -t Debug {projdir} {target}"
   "The default value for cmany-cmd"
   )
+
 (defvar cmany-cmd cmany-cmd-default
   "The command form to use when calling cmany."
   )
@@ -110,6 +115,7 @@ directories should be placed"
      (define-key map (kbd "C-c m P") 'cmany-set-proj-dir)
      (define-key map (kbd "C-c m D") 'cmany-set-build-dir)
      (define-key map (kbd "C-c m T") 'cmany-set-target)
+     (define-key map (kbd "C-c m W") 'cmany-set-work-dir)
      (define-key map (kbd "C-c m K") 'cmany-set-cmd)
 
      (define-key map (kbd "C-c m A") 'cmany-rtags-announce-build-dir)
@@ -122,8 +128,10 @@ directories should be placed"
      (define-key map (kbd "C-c m g") 'cmany-debug-again)
 
      (define-key map (kbd "C-c m e") 'cmany-edit-cache)
+
      (define-key map (kbd "C-c m s p") 'cmany-shell-at-proj)
      (define-key map (kbd "C-c m s b") 'cmany-shell-at-build)
+     (define-key map (kbd "C-c m s w") 'cmany-shell-at-work)
 
      map)
    "Key map for the Emacs Lisp cmany environment."
@@ -323,36 +331,49 @@ directories should be placed"
     )
   )
 
-(defun cmany--exec-prompt-proj-dir ()
-  (interactive)
-  (let* (
-         (pd (cmany--get-default-proj-dir))
-         (dn (file-name-directory pd))
-         (bn (file-name-base pd))
-         (pdr (ido-read-directory-name "cmany proj dir: " dn bn nil bn))
-         )
-    (cmany--log "proj dir input: %s" pdr)
-    (file-name-as-directory pdr)
-    )
-  )
-
-(defun cmany--exec-prompt-build-dir ()
-  (interactive)
-  (let* ((bd (cmany--guess-build-dir))
-         (dn (file-name-directory bd))
-         (bn (file-name-base pd))
-         (bdr (ido-read-directory-name "cmany build dir: " dn bn nil bn))
-         )
-    (cmany--log "build dir input: %s" bdr)
-    (file-name-as-directory bdr)
-    )
-  )
-
 (defun cmany--work-dir-or-default ()
   (if (cmany--str-not-empty 'cmany-work-dir)
       cmany-work-dir
       cmany-build-dir
       )
+  )
+
+;;-----------------------------------------------------------------------------
+
+(defun cmany--exec-prompt-proj-dir ()
+  (interactive)
+  (let* ((prompt "cmany proj dir: ")
+         (dn (file-name-directory (cmany--get-default-proj-dir)))
+         (bn (file-name-base dn))
+         (result (ido-read-directory-name prompt dn bn nil bn))
+         )
+    (cmany--log "prompt for %s%s" prompt result)
+    (file-name-as-directory result)
+    )
+  )
+
+(defun cmany--exec-prompt-build-dir ()
+  (interactive)
+  (let* ((prompt "cmany build dir: ")
+         (dn (file-name-directory (cmany--guess-build-dir)))
+         (bn (file-name-base dn))
+         (result (ido-read-directory-name prompt dn bn nil bn))
+         )
+    (cmany--log "prompt for %s%s" prompt result)
+    (file-name-as-directory result)
+    )
+  )
+
+(defun cmany--exec-prompt-work-dir ()
+  (interactive)
+  (let* ((prompt "cmany work dir: ")
+         (dn (file-name-directory (cmany--work-dir-or-default)))
+         (bn (file-name-base dn))
+         (result (ido-read-directory-name prompt dn bn nil bn))
+         )
+    (cmany--log "prompt for %s%s" prompt result)
+    (file-name-as-directory result)
+    )
   )
 
 ;;-----------------------------------------------------------------------------
@@ -418,9 +439,9 @@ directories should be placed"
   (let ((pc
          `(("cmany-build-dir" . ,cmany-build-dir)
            ("cmany-target" . ,cmany-target)
-           ("cmany-cmd" . ,cmany-cmd))
-         )
-        )
+           ("cmany-cmd" . ,cmany-cmd)
+           ("cmany-work-dir" . ,cmany-work-dir))
+         ))
     (when (not (boundp 'cmany--configs))
         (setq cmany--configs ())
       )
@@ -454,6 +475,7 @@ directories should be placed"
                 (cmany-set-build-dir (cdr (assoc "cmany-build-dir" c)) t)
                 (cmany-set-target (cdr (assoc "cmany-target" c)) t)
                 (cmany-set-cmd (cdr (assoc "cmany-cmd" c)) t)
+                (cmany-set-work-dir (cdr (assoc "cmany-work-dir" c)) t)
                 t ;; return true to signal loaded config
                 )
             nil ;; no config was found for this dir
@@ -525,6 +547,22 @@ directories should be placed"
   (cmany-load-configs-if-none)
   (cmany--log "set target: %s" tgt)
   (setq cmany-target tgt)
+  (cmany--clear-last-commands)
+  (when (not no-save) (cmany-save-configs))
+  )
+
+;;;###autoload
+(defun cmany-set-work-dir (&optional dir no-save)
+  "set the work directory for the current active target"
+  (interactive
+   (list (ido-read-directory-name
+          "set work dir: "
+          (if (boundp 'cmany-work-dir) cmany-work-dir cmany-build-dir)
+          nil nil cmany-target)
+         nil))
+  (cmany-load-configs-if-none)
+  (cmany--log "set work dir: %s" dir)
+  (setq cmany-work-dir dir)
   (cmany--clear-last-commands)
   (when (not no-save) (cmany-save-configs))
   )
