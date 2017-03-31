@@ -714,7 +714,9 @@ directories should be placed"
 
 ;;-----------------------------------------------------------------------------
 
-(defun cmany--show-configuration (&optional msg full)
+;;;###autoload
+(defun cmany-show-configuration (&optional msg full)
+  (interactive (list nil t))
   (if full
       (progn
         (cmany--log "----------------------------")
@@ -723,6 +725,7 @@ directories should be placed"
         (cmany--log "  cmany-build-dir: %s" cmany-build-dir)
         (cmany--log "  cmany-cmd: %s" cmany-cmd)
         (cmany--log "  cmany-target: %s" cmany-target)
+        (cmany--log "  cmany-work-dir: %s" cmany-work-dir)
         (cmany--log "----------------------------")
         )
     (progn
@@ -744,7 +747,7 @@ form, build dir and active target"
   (call-interactively 'cmany-set-build-dir)
   (call-interactively 'cmany-set-target)
 
-  (cmany--show-configuration "configuration from wizard")
+  (cmany-show-configuration "configuration from wizard")
   )
 
 ;;;###autoload
@@ -757,7 +760,7 @@ form, build dir and active target"
   (setq dir (cmany--guess-proj-dir))
   (if (cmany-restore-config dir)
       (progn
-        (cmany--show-configuration "restored configuration" t)
+        (cmany-show-configuration "restored configuration" t)
         )
     (progn
       (cmany--log "really need to guess")
@@ -765,10 +768,10 @@ form, build dir and active target"
       (cmany-set-cmd cmany-cmd-default t)
       (cmany-set-build-dir (cmany--guess-build-dir) t)
       (cmany-set-target "" t)
-      (cmany--show-configuration "guessed configuration" t)
+      (cmany-show-configuration "guessed configuration" t)
       )
     )
-  (cmany--show-configuration)
+  (cmany-show-configuration)
   )
 
 (provide 'cmany-mode)
