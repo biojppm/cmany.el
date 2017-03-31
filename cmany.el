@@ -45,12 +45,16 @@
 
 ;;; Commentary:
 
-;; cmany.el provides emacs integration for cmany, which is a
-;; batch-build tool for cmake-based projects.
+;; cmany.el provides emacs integration for cmany
+;; (http://github.com/biojppm/cmany.git ), a batch-build tool
+;; and workflow simplifier for cmake-based projects.
 
-;;; Code:
+;;-----------------------------------------------------------------------------
+;;-----------------------------------------------------------------------------
+;;-----------------------------------------------------------------------------
 (require 'term-run)
 
+;;-----------------------------------------------------------------------------
 (defgroup cmany nil
   "cmany customizations"
   :prefix "cmany-")
@@ -101,27 +105,27 @@ directories should be placed"
 (defvar cmany-mode-map
    (let ((map (make-sparse-keymap)))
 
-            (define-key map (kbd "C-c m ?") 'cmany-wizard)
-            (define-key map (kbd "C-c m !") 'cmany-restore-or-guess)
-            (define-key map (kbd "C-c m P") 'cmany-set-proj-dir)
-            (define-key map (kbd "C-c m D") 'cmany-set-build-dir)
-            (define-key map (kbd "C-c m T") 'cmany-set-target)
-            (define-key map (kbd "C-c m K") 'cmany-set-cmd)
+     (define-key map (kbd "C-c m ?") 'cmany-wizard)
+     (define-key map (kbd "C-c m !") 'cmany-restore-or-guess)
+     (define-key map (kbd "C-c m P") 'cmany-set-proj-dir)
+     (define-key map (kbd "C-c m D") 'cmany-set-build-dir)
+     (define-key map (kbd "C-c m T") 'cmany-set-target)
+     (define-key map (kbd "C-c m K") 'cmany-set-cmd)
 
-            (define-key map (kbd "C-c m A") 'cmany-rtags-announce-build-dir)
+     (define-key map (kbd "C-c m A") 'cmany-rtags-announce-build-dir)
 
-            (define-key map (kbd "C-c m C") 'cmany-configure)
-            (define-key map (kbd "C-c m c") 'cmany-configure-again)
-            (define-key map (kbd "C-c m B") 'cmany-build)
-            (define-key map (kbd "C-c m b") 'cmany-build-again)
-            (define-key map (kbd "C-c m G") 'cmany-debug)
-            (define-key map (kbd "C-c m g") 'cmany-debug-again)
+     (define-key map (kbd "C-c m C") 'cmany-configure)
+     (define-key map (kbd "C-c m c") 'cmany-configure-again)
+     (define-key map (kbd "C-c m B") 'cmany-build)
+     (define-key map (kbd "C-c m b") 'cmany-build-again)
+     (define-key map (kbd "C-c m G") 'cmany-debug)
+     (define-key map (kbd "C-c m g") 'cmany-debug-again)
 
-            (define-key map (kbd "C-c m e") 'cmany-edit-cache)
-            (define-key map (kbd "C-c m s p") 'cmany-shell-at-proj)
-            (define-key map (kbd "C-c m s b") 'cmany-shell-at-build)
+     (define-key map (kbd "C-c m e") 'cmany-edit-cache)
+     (define-key map (kbd "C-c m s p") 'cmany-shell-at-proj)
+     (define-key map (kbd "C-c m s b") 'cmany-shell-at-build)
 
-            map)
+     map)
    "Key map for the Emacs Lisp cmany environment."
    )
 
@@ -162,6 +166,8 @@ directories should be placed"
   :after-hook (cmany-restore-or-guess)
   )
 
+;;-----------------------------------------------------------------------------
+;;-----------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------
 ;; utility functions
 
@@ -612,7 +618,7 @@ directories should be placed"
         (if (executable-find "cmake-gui")
             (progn (cmany--log "editing cache via cmake-gui at %s" cmany-build-dir)
                    (start-process "cmake-gui" nil "cmake-gui" "."))
-            (progn (cmany--log "ERROR: could not find ccmake or cmake-gui in the exec-path: %s" exec-path))
+          (progn (error "ERROR: could not find ccmake or cmake-gui in the exec-path: %s" exec-path))
           )
         )
       )
