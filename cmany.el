@@ -55,13 +55,17 @@
 (require 'term-run)
 
 ;;-----------------------------------------------------------------------------
+
 (defgroup cmany nil
-  "cmany customizations"
-  :prefix "cmany-")
+  "Customizations for cmany.el."
+  :prefix "cmany-"
+  :group 'ide
+  )
 
 (defcustom cmany-build-dir-prefix "build/"
   "the path (relative to the project dir) under which the build
-directories should be placed"
+directories should be placed. This applies only to newly created
+build trees."
   :group 'cmany
   :type 'string
   :safe #'stringp
@@ -176,6 +180,14 @@ directories should be placed"
   :lighter " cmany"
   :keymap cmany-mode-map
   :after-hook (cmany-restore-or-guess)
+  )
+
+;;;###autoload
+(define-globalized-minor-mode global-cmany-mode
+  cmany-mode
+  (lambda (arg)
+    (cmany-mode arg))
+  :group 'cmany
   )
 
 ;;-----------------------------------------------------------------------------
