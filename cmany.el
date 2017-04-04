@@ -300,9 +300,14 @@ build trees."
 ;;-----------------------------------------------------------------------------
 (defun cmany--guess-proj-dir ()
   (let ((r ""))
-    ;; if projectile is available, get the current project root
-    (when (featurep 'projectile)
-      (setq r (projectile-expand-root ".")))
+    ;; if projectile is available, turned on and we're in a project,
+    ;; get the current projectile project root
+    (when (and
+           (featurep 'projectile)
+           (bound-and-true-p projectile-mode)
+           (projectile-project-p))
+      (setq r (projectile-expand-root "."))
+      )
     (if (not (string-equal r ""))
         (progn
           ;; yep, got project root through projectile
