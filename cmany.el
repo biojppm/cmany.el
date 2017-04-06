@@ -527,26 +527,30 @@ build trees."
 (defun cmany-save-configs ()
   (interactive)
   (cmany-load-configs-if-none)
-  ;;(cmany--log "configs before: %s" cmany--configs)
-  (let ((pc
+  (when (not (boundp 'cmany--configs))
+    (setq cmany--configs ())
+    )
+  (let ((pd (file-truename cmany-proj-dir))
+        (pc
          `(("cmany-build-dir" . ,cmany-build-dir)
            ("cmany-target" . ,cmany-target)
            ("cmany-cmd" . ,cmany-cmd)
-           ("cmany-work-dir" . ,cmany-work-dir))
-         ))
-    (when (not (boundp 'cmany--configs))
-        (setq cmany--configs ())
+           ("cmany-work-dir" . ,cmany-work-dir)
+           ("cmany--last-configure" . ,cmany--last-configure)
+           ("cmany--last-build" . ,cmany--last-build)
+           ("cmany--last-debug" . ,cmany--last-debug)
+           )
+         )
+        (tmp ()) ;; we'll put the new list here
+        )
+    (add-to-list 'tmp (cons pd pc)) ;; put the new config in first place
+    (dolist (c cmany--configs)
+      (when (not (string-equal (car c) pd))
+        (add-to-list 'tmp c) ;; add more configs if they're not the same
+        )
       )
-    ;; http://emacs.stackexchange.com/questions/9328/looking-for-a-simple-way-to-update-an-alist-without-introducing-degeneracies
-    ;; to update (key,val) from an alist...
-    ;; ... remove (key,val)
-    (setq cmany--configs (assq-delete-all cmany-proj-dir cmany--configs))
-    ;;(cmany--log "configs before: %s" cmany--configs)
-    ;; ... and set it with the new value
-    (add-to-list 'cmany--configs (cons cmany-proj-dir pc))
-    ;;(setq cmany--configs `((,cmany-proj-dir ,pc)))
+    (setq cmany--configs tmp) ;; done
     )
-  ;;(cmany--log "configs after: %s" cmany--configs)
   (cmany--write-to-file
    (concat user-emacs-directory "cmany.save")
    cmany--configs)
