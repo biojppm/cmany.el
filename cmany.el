@@ -240,20 +240,20 @@ build trees."
     (insert-file-contents file)
     (goto-char (point-min))
     (let ((v (read (current-buffer))))
-      (cmany--log "symbol: %s: %s" symbol v)
+      ;;(cmany--log "symbol: %s: %s" symbol v)
       (set symbol v)
       )
     )
   )
 
 (defun cmany--get-cmd-output (workdir cmd)
-  "Run PROGRAM with ARGS and return the output in a string if it returns 0;
+  "Run cmd and return the output in a string if it returns 0;
   otherwise return an empty string."
   (let ((d default-directory))
      (cmany--log "cmd exec: %s" cmd)
      (cd workdir)
      (with-temp-buffer
-       (cmany--log "cmd exec at dir: %s (was at %s)" (pwd) d)
+       (cmany--log "cmd exec dir: %s (was at %s)" (pwd) d)
        (let ((p (call-process-shell-command cmd nil (current-buffer))))
          (cmany--log "cmd return: %d" p)
          (cmany--log "cmd output: %s" (buffer-string))
@@ -302,8 +302,8 @@ build trees."
   (let* ((base-cmd (cmany--format-cmd cmd))
          (full-cmd (concat base-cmd more-args))
          )
-    (cmany--log "cmd base: %s" base-cmd)
-    (cmany--log "cmd full: %s" full-cmd)
+    ;;(cmany--log "cmd base: %s" base-cmd)
+    ;;(cmany--log "cmd full: %s" full-cmd)
     (cmany--get-cmd-output cmany-proj-dir full-cmd)
     )
   )
