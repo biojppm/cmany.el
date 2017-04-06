@@ -564,21 +564,30 @@ build trees."
      (ido-read-directory-name "cmake proj dir to restore: " (cmany--guess-proj-dir)))))
   (if (boundp 'cmany--configs)
       (progn
+        (setq dir (file-truename dir))
         (let ((c (cdr (assoc dir cmany--configs))))
           (if c
               (progn
+                (cmany--log "restore-config: found config for %s: %s" dir c)
                 (cmany-set-proj-dir dir t)
                 (cmany-set-build-dir (cdr (assoc "cmany-build-dir" c)) t)
                 (cmany-set-target (cdr (assoc "cmany-target" c)) t)
                 (cmany-set-cmd (cdr (assoc "cmany-cmd" c)) t)
                 (cmany-set-work-dir (cdr (assoc "cmany-work-dir" c)) t)
+                (setq cmany--last-configure (cdr (assoc "cmany--last-configure" c)))
+                (setq cmany--last-build (cdr (assoc "cmany--last-build" c)))
+                (setq cmany--last-debug (cdr (assoc "cmany--last-debug" c)))
                 t ;; return true to signal loaded config
                 )
-            nil ;; no config was found for this dir
+            (progn
+              (cmany--log "restore-config: no config was found for %s: %s" dir)
+              nil ;; no config was found for this dir
+              )
             )
           )
         )
     (progn
+      (cmany--log "restore-config: no configs available")
       nil ;; no configs are available
       )
     )
@@ -589,6 +598,18 @@ build trees."
   (setq cmany--last-build "")
   (setq cmany--last-configure "")
   (setq cmany--last-debug "")
+  )
+
+(defun cmany--get-known-projects ()
+  (when (not (boundp 'cmany--known-projects))
+    (setq cmany--known-projects (list))
+    (when (boundp 'cmany--configs)
+      (dolist (p cmany--configs)
+        (add-to-list 'cmany--known-projects (car p))
+        )
+      )
+    )
+  cmany--known-projects
   )
 
 ;;-----------------------------------------------------------------------------
