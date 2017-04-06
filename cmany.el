@@ -111,6 +111,17 @@ build trees."
   )
 
 ;;-----------------------------------------------------------------------------
+(defvar cmany--last-build nil
+  "The last build command used by cmany."
+  )
+(defvar cmany--last-configure nil
+  "The last configure command used by cmany."
+  )
+(defvar cmany--last-debug nil
+  "The last debug command used by cmany."
+  )
+
+;;-----------------------------------------------------------------------------
 (defvar cmany-mode-map
    (let ((map (make-sparse-keymap)))
 
