@@ -498,11 +498,19 @@ build trees."
   "loads configs"
   (interactive)
   (let ((fn (concat user-emacs-directory "cmany.save")))
-    (when (file-exists-p fn)
+    (if (file-exists-p fn)
+        (progn
           (cmany--log "loading configs from %s" fn)
           (cmany--read-from-file fn 'cmany--configs)
           ;(message "cmany loaded configs: %s" cmany--configs)
           )
+      (progn
+        (cmany--log "configs file not found: %s" fn)
+        (cmany--log "starting with empty config")
+        (setq cmany--configs ())
+        )
+    )
+    (cmany--get-known-projects)
     )
   )
 
