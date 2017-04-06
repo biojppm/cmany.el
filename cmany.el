@@ -207,7 +207,13 @@ build trees."
 ;; utility functions
 
 (defun cmany--log (fmt &rest args)
-  (apply 'message (concat "cmany: " fmt) args)
+  ;;(message (apply 'format (concat "cmany[%s]: " fmt "\n") (current-buffer) args))
+  (let ((b (current-buffer)))
+    (with-current-buffer (get-buffer-create "*cmany*")
+      ;;(end-of-buffer)
+      (insert (apply 'format (concat "cmany[%s]: " fmt "\n") b args))
+      )
+    )
   )
 
 (defun cmany--visit-buffer (name)
