@@ -120,29 +120,32 @@ build trees."
 (defvar cmany--last-debug nil
   "The last debug command used by cmany."
   )
+(defvar cmany--current-project nil
+  ""
+  )
 
 ;;-----------------------------------------------------------------------------
 (defvar cmany-mode-map
    (let ((map (make-sparse-keymap)))
 
-     (define-key map (kbd "C-c m ?") 'cmany-wizard)
-     (define-key map (kbd "C-c m !") 'cmany-restore-or-guess)
-     (define-key map (kbd "C-c m P") 'cmany-set-proj-dir)
-     (define-key map (kbd "C-c m D") 'cmany-set-build-dir)
-     (define-key map (kbd "C-c m T") 'cmany-set-target)
-     (define-key map (kbd "C-c m W") 'cmany-set-work-dir)
-     (define-key map (kbd "C-c m K") 'cmany-set-cmd)
+     (define-key map (kbd "C-c m x !") 'cmany-restore-or-guess)
+     (define-key map (kbd "C-c m x ?") 'cmany-wizard)
+     (define-key map (kbd "C-c m x p") 'cmany-set-proj-dir)
+     (define-key map (kbd "C-c m x b") 'cmany-set-build-dir)
+     (define-key map (kbd "C-c m x w") 'cmany-set-work-dir)
+     (define-key map (kbd "C-c m x t") 'cmany-set-target)
+     (define-key map (kbd "C-c m x c") 'cmany-set-cmd)
 
      (define-key map (kbd "C-c m A") 'cmany-rtags-announce-build-dir)
 
-     (define-key map (kbd "C-c m C") 'cmany-configure)
-     (define-key map (kbd "C-c m c") 'cmany-configure-again)
-     (define-key map (kbd "C-c m B") 'cmany-build)
-     (define-key map (kbd "C-c m b") 'cmany-build-again)
-     (define-key map (kbd "C-c m R") 'cmany-run)
-     (define-key map (kbd "C-c m r") 'cmany-run-again)
-     (define-key map (kbd "C-c m G") 'cmany-debug)
-     (define-key map (kbd "C-c m g") 'cmany-debug-again)
+     (define-key map (kbd "C-c m C") 'cmany-configure-with-prompt)
+     (define-key map (kbd "C-c m c") 'cmany-configure)
+     (define-key map (kbd "C-c m B") 'cmany-build-with-prompt)
+     (define-key map (kbd "C-c m b") 'cmany-build)
+     (define-key map (kbd "C-c m D") 'cmany-debug-with-prompt)
+     (define-key map (kbd "C-c m d") 'cmany-debug)
+     (define-key map (kbd "C-c m R") 'cmany-run-with-prompt)
+     (define-key map (kbd "C-c m r") 'cmany-run)
 
      (define-key map (kbd "C-c m e") 'cmany-edit-cache)
 
@@ -159,27 +162,27 @@ build trees."
   '("cmany"
     ;;["Documentation" cmany-doc :help "Get documentation for symbol at point"]
     ;;["Run Tests" cmany-test :help "Run test at point, or all tests in the project"]
-    ["Configure"             cmany-configure       :keys "C-c m C"   :help "call cmany configure using the current project params"]
-    ["Configure again"       cmany-configure-again :keys "C-c m c"   :help "call cmany configure using the settings of the previous configure"]
-    ["Build"                 cmany-build           :keys "C-c m B"   :help "call cmany build using the current project params"]
-    ["Build again"           cmany-build-again     :keys "C-c m b"   :help "call cmany build using the settings of the previous build"]
-    ["Run"                   cmany-run             :keys "C-c m R"   :help "run the current active target"]
-    ["Run again"             cmany-run-again       :keys "C-c m r"   :help "run the current active target using the settings of the previous run"]
-    ["Debug"                 cmany-debug           :keys "C-c m G"   :help "open a gdb session with the current target"]
-    ["Debug-again"           cmany-debug-again     :keys "C-c m g"   :help "open a gdb session with the current target using the settings of the previous debug"]
-    ["Edit cache"            cmany-edit-cache      :keys "C-c m e"   :help "edit the cmake cache using the current project params"]
-    ["Open shell: proj dir"  cmany-shell-at-proj   :keys "C-c m s p" :help "open a shell session at the current project directory"]
-    ["Open shell: build dir" cmany-shell-at-build  :keys "C-c m s d" :help "open a shell session at the current build directory"]
-    ["Open shell: work dir"  cmany-shell-at-work   :keys "C-c m s w" :help "open a shell session at the current work directory"]
+    ["Configure"             cmany-configure             :keys "C-c m c"   :help "call cmany configure"]
+    ["Configure w/prompt"    cmany-configure-with-prompt :keys "C-c m C"   :help "call cmany configure with interactive prompt for the configure command"]
+    ["Build"                 cmany-build                 :keys "C-c m b"   :help "call cmany build"]
+    ["Build w/prompt"        cmany-build-with-prompt     :keys "C-c m B"   :help "call cmany build with interactive prompt for the build command"]
+    ["Debug-again"           cmany-debug                 :keys "C-c m g"   :help "open a gdb session with the current target"]
+    ["Debug w/prompt"        cmany-debug-with-prompt     :keys "C-c m G"   :help "open a gdb session with the current target with interactive prompt for the build command"]
+    ["Run again"             cmany-run                   :keys "C-c m r"   :help "run the current active target"]
+    ["Run w/prompt"          cmany-run-with-prompt       :keys "C-c m R"   :help "run the current active target with interactive prompt for the build command"]
+    ["Edit cache"            cmany-edit-cache            :keys "C-c m e"   :help "edit the cmake cache of the current project"]
+    ["Open shell: proj dir"  cmany-shell-at-proj         :keys "C-c m s p" :help "open a shell session at the current project directory"]
+    ["Open shell: build dir" cmany-shell-at-build        :keys "C-c m s d" :help "open a shell session at the current build directory"]
+    ["Open shell: work dir"  cmany-shell-at-work         :keys "C-c m s w" :help "open a shell session at the current work directory"]
     "---"
     ("Project params"
-    ["Wizard"                cmany-wizard           :keys "C-c m ?" :help "Run an interactive wizard to configure the project params"]
-    ["Restore or guess"      cmany-restore-or-guess :keys "C-c m !" :help "Based on the current buffer, restore project parameters from a previous session, or guess if no session exists"]
-    ["Set project directory" cmany-set-proj-dir     :keys "C-c m P" :help "Set the current project directory"]
-    ["Set build directory"   cmany-set-build-dir    :keys "C-c m D" :help "Set the current build directory"]
-    ["Set target"            cmany-set-target       :keys "C-c m T" :help "Set the current target"]
-    ["Set work directory"    cmany-set-work-dir     :keys "C-c m W" :help "Set the current work directory"]
-    ["Set command"           cmany-set-target       :keys "C-c m K" :help "Set the current cmany command"]
+    ["Restore or guess"      cmany-restore-or-guess :keys "C-c m x !" :help "Based on the current buffer, restore project parameters from a previous session, or guess if no session exists"]
+    ["Wizard"                cmany-wizard           :keys "C-c m x ?" :help "Run an interactive prompt sequence to configure the project params"]
+    ["Set project directory" cmany-set-proj-dir     :keys "C-c m x p" :help "Set the root of the current project"]
+    ["Set build directory"   cmany-set-build-dir    :keys "C-c m x b" :help "Set the current build directory"]
+    ["Set target"            cmany-set-target       :keys "C-c m x t" :help "Set the current target"]
+    ["Set work directory"    cmany-set-work-dir     :keys "C-c m x w" :help "Set the current work directory"]
+    ["Set command"           cmany-set-cmd          :keys "C-c m x c" :help "Set the current cmany command"]
     ["rtags: announce directory" cmany-rtags-announce-build-dir :keys "C-c m A" :help "Announce a build directory to the rtags daemon"])
     )
   )
@@ -705,7 +708,7 @@ build trees."
 
 ;;-----------------------------------------------------------------------------
 ;;;###autoload
-(defun cmany-configure (cmd)
+(defun cmany-configure-with-prompt (cmd)
   (interactive
    (list
     (read-string
@@ -725,17 +728,17 @@ build trees."
   )
 
 ;;;###autoload
-(defun cmany-configure-again()
+(defun cmany-configure()
   (interactive)
   (if (cmany--str-not-empty 'cmany--last-configure)
       (cmany-configure cmany--last-configure)
-    (call-interactively 'cmany-configure)
+    (call-interactively 'cmany-configure-with-prompt)
     )
   )
 
 ;;-----------------------------------------------------------------------------
 ;;;###autoload
-(defun cmany-build (cmd)
+(defun cmany-build-with-prompt (cmd)
   "build the current target"
   (interactive
    (list
@@ -756,18 +759,18 @@ build trees."
   )
 
 ;;;###autoload
-(defun cmany-build-again()
+(defun cmany-build()
   (interactive)
   (if (cmany--str-not-empty 'cmany--last-build)
       (cmany-build cmany--last-build)
-    (call-interactively 'cmany-build)
+    (call-interactively 'cmany-build-with-prompt)
     )
   )
 
 ;;-----------------------------------------------------------------------------
 
 ;;;###autoload
-(defun cmany-debug (cmd &optional workdir)
+(defun cmany-debug-with-prompt (cmd &optional workdir)
   "debug the current target"
   (interactive
    (list
@@ -828,17 +831,17 @@ build trees."
   )
 
 ;;;###autoload
-(defun cmany-debug-again()
+(defun cmany-debug()
   (interactive)
   (if (cmany--str-not-empty 'cmany--last-debug)
       (cmany-debug cmany--last-debug)
-    (call-interactively 'cmany-debug)
+    (call-interactively 'cmany-debug-with-prompt)
     )
   )
 
 ;;-----------------------------------------------------------------------------
 ;;;###autoload
-(defun cmany-run (cmd &optional workdir)
+(defun cmany-run-with-prompt (cmd &optional workdir)
   "run the current target"
   (interactive
    (list
@@ -868,11 +871,11 @@ build trees."
   )
 
 ;;;###autoload
-(defun cmany-run-again()
+(defun cmany-run()
   (interactive)
   (if (cmany--str-not-empty 'cmany--last-run)
       (cmany-run cmany--last-run)
-    (call-interactively 'cmany-debug)
+    (call-interactively 'cmany-run-with-prompt)
     )
   )
 
