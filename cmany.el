@@ -173,13 +173,13 @@ build trees."
     ["Open shell: work dir"  cmany-shell-at-work   :keys "C-c m s w" :help "open a shell session at the current work directory"]
     "---"
     ("Project params"
-    ["Wizard"                cmany-wizard        :keys "C-c m ?" :help "Run an interactive wizard to configure the project params"]
-    ["Restore or guess"      cmany-test          :keys "C-c m !" :help "Restore project parameters from a previous session, or guess if no session exists"]
-    ["Set project directory" cmany-set-proj-dir  :keys "C-c m P" :help "Set the current project directory"]
-    ["Set build directory"   cmany-set-build-dir :keys "C-c m D" :help "Set the current build directory"]
-    ["Set target"            cmany-set-target    :keys "C-c m T" :help "Set the current target"]
-    ["Set work directory"    cmany-set-work-dir  :keys "C-c m W" :help "Set the current work directory"]
-    ["Set command"           cmany-set-target    :keys "C-c m K" :help "Set the current cmany command"]
+    ["Wizard"                cmany-wizard           :keys "C-c m ?" :help "Run an interactive wizard to configure the project params"]
+    ["Restore or guess"      cmany-restore-or-guess :keys "C-c m !" :help "Based on the current buffer, restore project parameters from a previous session, or guess if no session exists"]
+    ["Set project directory" cmany-set-proj-dir     :keys "C-c m P" :help "Set the current project directory"]
+    ["Set build directory"   cmany-set-build-dir    :keys "C-c m D" :help "Set the current build directory"]
+    ["Set target"            cmany-set-target       :keys "C-c m T" :help "Set the current target"]
+    ["Set work directory"    cmany-set-work-dir     :keys "C-c m W" :help "Set the current work directory"]
+    ["Set command"           cmany-set-target       :keys "C-c m K" :help "Set the current cmany command"]
     ["rtags: announce directory" cmany-rtags-announce-build-dir :keys "C-c m A" :help "Announce a build directory to the rtags daemon"])
     )
   )
