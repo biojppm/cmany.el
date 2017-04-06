@@ -584,6 +584,8 @@ build trees."
   (cmany--write-to-file
    (concat user-emacs-directory "cmany.save")
    cmany--configs)
+  (setq cmany--known-projects ())
+  (cmany--get-known-projects)
   )
 
 ;;;###autoload
@@ -592,8 +594,10 @@ build trees."
    (list
     (file-name-as-directory
      (ido-read-directory-name "cmake proj dir to restore: " (cmany--guess-proj-dir)))))
+  (cmany--log "restore-config: begin: %s" dir)
   (if (boundp 'cmany--configs)
       (progn
+        (cmany--log "restore-config: configs available")
         (setq dir (file-truename dir))
         (let ((c (cdr (assoc dir cmany--configs))))
           (if c
@@ -610,7 +614,7 @@ build trees."
                 t ;; return true to signal loaded config
                 )
             (progn
-              (cmany--log "restore-config: no config was found for %s: %s" dir)
+              (cmany--log "restore-config: no config was found for %s" dir)
               nil ;; no config was found for this dir
               )
             )
@@ -621,6 +625,7 @@ build trees."
       nil ;; no configs are available
       )
     )
+  (cmany--log "restore-config: end: %s" dir)
   )
 
 (defun cmany--clear-last-commands ()
@@ -631,7 +636,8 @@ build trees."
   )
 
 (defun cmany--get-known-projects ()
-  (when (not (boundp 'cmany--known-projects))
+  (when (or (not (boundp 'cmany--known-projects))
+            (not cmany--known-projects))
     (setq cmany--known-projects (list))
     (when (boundp 'cmany--configs)
       (dolist (p cmany--configs)
@@ -730,6 +736,9 @@ build trees."
     )
   )
 
+
+;;-----------------------------------------------------------------------------
+;;-----------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------
 ;;;###autoload
 (defun cmany-configure-with-prompt (cmd)
@@ -1011,6 +1020,8 @@ form, build dir and active target"
 (defun cmany-guess (&optional dir)
   "make automatic guesses the cmany params"
   (interactive (list (cmany--guess-proj-dir)))
+  (when (not dir)
+    (setq dir (cmany--guess-proj-dir)))
   (cmany-set-proj-dir dir t)
   (cmany-set-cmd cmany-cmd-default t)
   (cmany-set-build-dir (cmany--guess-build-dir) t)
@@ -1029,15 +1040,17 @@ form, build dir and active target"
   (cmany--log "cmany-restore-possibly: configs loaded!")
   (let ((dir (cmany--guess-proj-dir)))
     (cmany--log "cmany-restore-possibly: guessed directory: %s" dir)
-    (if (cmany-restore-config dir)
+    (let ((restore-ok  (cmany-restore-config dir)))
+      (if (cmany-restore-config dir)
+          (progn
+            (cmany--log "cmany-restore-possibly: restored configuration: %s" dir)
+            (cmany-show-configuration "restored configuration")
+            dir
+            )
         (progn
-          (cmany--log "cmany-restore-possibly: restored configuration: %s" dir)
-          (cmany-show-configuration "restored configuration")
-          dir
+          (cmany--log "cmany-restore-possibly: no luck with dir: %s" dir)
+          nil
           )
-      (progn
-        (cmany--log "cmany-restore-possibly: no luck with dir: %s" dir)
-        nil
         )
       )
     )
