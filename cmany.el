@@ -220,7 +220,11 @@ build trees."
         (cmany--log "mode-hook 1")
         (let* (
                (b (buffer-name (current-buffer)))
-               (is-special (and (string-prefix-p "*" b) (string-suffix-p "*" b))))
+               (is-special (or
+                            (and (string-prefix-p "*" b) (string-suffix-p "*" b))
+                            (and (string-prefix-p " *" b) (string-suffix-p "*" b))
+                            ))
+               )
           (if is-special
               (progn
                 (cmany--log "mode-hook 2.1: ignoring special buffer %s" b)
@@ -376,14 +380,14 @@ build trees."
         (gotcml nil))
     ;; if projectile is available, turned on and we're in a project,
     ;; get the current projectile project root
-    (cmany--log "AQUI 0")
+    (cmany--log "guess-proj-dir: begin")
     (when (and
            (featurep 'projectile)
            (bound-and-true-p projectile-mode)
            (projectile-project-p))
       (setq r (file-truename (projectile-project-p)))
       )
-    (cmany--log "AQUI 1")
+    (cmany--log "guess-proj-dir: after projectile: %s" r)
     (if (cmany--str-not-empty 'r)
         (progn
           ;; we got project root through projectile
@@ -392,11 +396,11 @@ build trees."
           (if (file-exists-p (concat r "CMakeLists.txt"))
               (progn
                 ;; yep, this is what we want
-                (cmany--log "proj dir from projectile: %s" r)
+                (cmany--log "guess-proj-dir: proj dir from projectile: %s" r)
                 (setq gotcml t)
                 )
             (progn
-              (cmany--log "no CMakeLists.txt at proj dir from projectile: %s" r)
+              (cmany--log "guess-proj-dir: no CMakeLists.txt at proj dir from projectile: %s" r)
               )
             )
           )
@@ -408,7 +412,7 @@ build trees."
         (if (cmany--str-not-empty 'r)
             (progn
               ;; yep, found a CMakeLists.txt
-              (cmany--log "proj dir from locate-dominating-file: %s" r)
+              (cmany--log "guess-proj-dir: proj dir from locate-dominating-file: %s" r)
               (setq r (file-name-as-directory r))
               (setq gotcml t)
               )
@@ -419,11 +423,11 @@ build trees."
             )
             (if (and r (file-exists-p (concat r "CMakeLists.txt")))
                 (progn
-                  (cmany--log "proj dir from current dir: %s" r)
+                  (cmany--log "guess-proj-dir: proj dir from current dir: %s" r)
                   (setq gotcml t)
                   )
               (progn
-                (cmany--log "no CMakeLists.txt at current dir %s" r)
+                (cmany--log "guess-proj-dir: no CMakeLists.txt at current dir %s" r)
                 )
               )
             )
@@ -434,9 +438,9 @@ build trees."
       ;; Is r a subdir of any known cmany project?
       (dolist (p (cmany--get-known-projects))
         (let ((rel (file-relative-name r p)))
-          (cmany--log "is %s a subdir of %s? %s" r p rel)
+          (cmany--log "guess-proj-dir: is %s a subdir of %s? %s" r p rel)
           (when (not (file-name-absolute-p rel))
-            (cmany--log "%s is a subdir of %s" r p)
+            (cmany--log "guess-proj-dir: %s is a subdir of %s" r p)
             (setq gotcml t)
             )
           )
@@ -445,7 +449,7 @@ build trees."
         (setq r nil)
         )
       )
-    (cmany--log "AQUI 2")
+    (cmany--log "guess-proj-dir: end %s" r)
     r ;; return the result
     )
   )
