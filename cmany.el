@@ -124,6 +124,9 @@ build trees."
   ""
   )
 
+(defvar cmany--with-global-mode nil
+  ""
+  )
 ;;-----------------------------------------------------------------------------
 (defvar cmany-mode-map
    (let ((map (make-sparse-keymap)))
@@ -195,20 +198,13 @@ build trees."
   :group cmany
   :lighter " cmany"
   :keymap cmany-mode-map
-  :after-hook (cmany-restore-or-guess)
+  :after-hook (cmany--mode-hook)
   )
 
 ;;;###autoload
 (define-globalized-minor-mode global-cmany-mode
   cmany-mode
-  (lambda ()
-    (when (not cmany-proj-dir)
-      ;;(add-hook 'find-file-hook 'cmany-global-mode-open-file-hook)
-      (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
-      (cmany--log "                          . current dir %s" (pwd))
-      (cmany-mode 1)
-      )
-    )
+  (lambda() (cmany--global-mode-hook))
   :group 'cmany
   :keymap cmany-mode-map
   )
@@ -216,6 +212,24 @@ build trees."
 (provide 'cmany-mode)
 (provide 'global-cmany-mode)
 
+(defun cmany--mode-hook ()
+  "called every time cmany-mode is set"
+  (if cmany--with-global-mode
+      (cmany-restore-possibly)
+    (cmany-restore-or-guess)
+      )
+  )
+
+(defun cmany--global-mode-hook ()
+  "called when global-cmany-mode is set"
+  (cmany--log "global cmany-mode? %s" (current-buffer))
+  (setq cmany--with-global-mode t)
+  (when (not cmany-proj-dir)
+    (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
+    (cmany--log "                          . current dir %s" (pwd))
+    (cmany-mode 1)
+    )
+  )
 
 ;;-----------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------
