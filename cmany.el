@@ -619,11 +619,13 @@ build trees."
   (interactive
    (list (call-interactively 'cmany--exec-prompt-proj-dir)
          nil))
-  (cmany-load-configs-if-none)
   (cmany--log "set proj dir: %s" dir)
   (setq cmany-proj-dir dir)
   (cmany--clear-last-commands)
-  (when (not no-save) (cmany-save-configs))
+  (when (not no-save)
+    (cmany-load-configs-if-none)
+    (cmany-save-configs)
+    )
   )
 
 ;;;###autoload
@@ -632,11 +634,13 @@ build trees."
   (interactive
    (list (call-interactively 'cmany--exec-prompt-build-dir)
          nil))
-  (cmany-load-configs-if-none)
   (cmany--log "set build dir: %s" dir)
   (setq cmany-build-dir dir)
   (cmany--clear-last-commands)
-  (when (not no-save) (cmany-save-configs))
+  (when (not no-save)
+    (cmany-load-configs-if-none)
+    (cmany-save-configs)
+    )
   (cmany-rtags-announce-build-dir cmany-build-dir)
   )
 
@@ -646,11 +650,13 @@ build trees."
   (interactive
    (list (read-string "cmany command: " cmany-cmd)
          nil))
-  (cmany-load-configs-if-none)
   (cmany--log "set command: %s" cmd)
   (setq cmany-cmd cmd)
   (cmany--clear-last-commands)
-  (when (not no-save) (cmany-save-configs))
+  (when (not no-save)
+    (cmany-load-configs-if-none)
+    (cmany-save-configs)
+    )
   )
 
 ;;;###autoload
@@ -661,11 +667,13 @@ build trees."
           "cmany current target: "
           (cmany--get-cmany-lines "show_targets") nil nil cmany-target)
          nil))
-  (cmany-load-configs-if-none)
   (cmany--log "set target: %s" tgt)
   (setq cmany-target tgt)
   (cmany--clear-last-commands)
-  (when (not no-save) (cmany-save-configs))
+  (when (not no-save)
+    (cmany-load-configs-if-none)
+    (cmany-save-configs)
+    )
   )
 
 ;;;###autoload
@@ -674,11 +682,13 @@ build trees."
   (interactive
    (list (call-interactively 'cmany--exec-prompt-work-dir)
          nil))
-  (cmany-load-configs-if-none)
   (cmany--log "set work dir: %s" dir)
   (setq cmany-work-dir dir)
   (cmany--clear-last-commands)
-  (when (not no-save) (cmany-save-configs))
+  (when (not no-save)
+    (cmany-load-configs-if-none)
+    (cmany-save-configs)
+    )
   )
 
 ;;-----------------------------------------------------------------------------
@@ -693,8 +703,8 @@ build trees."
          (progn (cmany--format-cmd "configure"))
          )
      )))
-  (cmany-save-configs)
   (setq cmany--last-configure cmd)
+  (cmany-save-configs)
   (let ((d default-directory))
     (cd cmany-proj-dir)
     (compile cmd)
@@ -724,8 +734,8 @@ build trees."
          (progn (cmany--format-cmd "build" cmany-target))
          )
      )))
-  (cmany-save-configs)
   (setq cmany--last-build cmd)
+  (cmany-save-configs)
   (let ((d default-directory))
     (cd cmany-proj-dir)
     (compile cmd)
@@ -763,8 +773,8 @@ build trees."
       )
     )
    )
-  (cmany-save-configs)
   (setq cmany--last-debug cmd)
+  (cmany-save-configs)
   (if (not workdir)
       (setq workdir cmany-build-dir))
   (if cmany-build-before-run
