@@ -935,26 +935,23 @@ build trees."
 ;;-----------------------------------------------------------------------------
 
 ;;;###autoload
-(defun cmany-show-configuration (&optional msg full)
-  (interactive (list nil t))
-  (if full
-      (progn
-        (cmany--log "----------------------------")
-        (when (not (equal msg nil)) (cmany--log "%s:" msg))
-        (cmany--log "  cmany-proj-dir: %s" cmany-proj-dir)
-        (cmany--log "  cmany-build-dir: %s" cmany-build-dir)
-        (cmany--log "  cmany-cmd: %s" cmany-cmd)
-        (cmany--log "  cmany-target: %s" cmany-target)
-        (cmany--log "  cmany-work-dir: %s" cmany-work-dir)
-        (cmany--log "----------------------------")
-        )
-    (progn
-      (cmany--log "%scurrent config: %s%s"
-                  (if (equal msg nil) "" (format "%s: " msg))
-                  cmany-build-dir
-                  (if (string-equal cmany-target "") "" (format " [%s]" cmany-target)))
-      )
-    )
+(defun cmany-show-configuration (&optional msg)
+  (interactive (list nil))
+
+  (cmany--log "----------------------------")
+  (when (cmany--str-not-empty 'msg) (cmany--log "%s:" msg))
+  (cmany--log "  cmany-proj-dir: %s" cmany-proj-dir)
+  (cmany--log "  cmany-build-dir: %s" cmany-build-dir)
+  (cmany--log "  cmany-cmd: %s" cmany-cmd)
+  (cmany--log "  cmany-target: %s" cmany-target)
+  (cmany--log "  cmany-work-dir: %s" cmany-work-dir)
+  (cmany--log "----------------------------")
+
+  (message "cmany: %scurrent config: %s%s"
+           (if (cmany--str-not-empty 'msg) "" (format "%s: " msg))
+           cmany-build-dir
+           (if (string-equal cmany-target "") "" (format " [%s]" cmany-target))
+           )
   )
 
 ;;;###autoload
