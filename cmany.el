@@ -316,34 +316,77 @@ build trees."
 
 ;;-----------------------------------------------------------------------------
 (defun cmany--guess-proj-dir ()
-  (let ((r ""))
+  (let ((r "")
+        (gotcml nil))
     ;; if projectile is available, turned on and we're in a project,
     ;; get the current projectile project root
+    (cmany--log "AQUI 0")
     (when (and
            (featurep 'projectile)
            (bound-and-true-p projectile-mode)
            (projectile-project-p))
-      (setq r (projectile-expand-root "."))
+      (setq r (file-truename (projectile-project-p)))
       )
-    (if (not (string-equal r ""))
+    (cmany--log "AQUI 1")
+    (if (cmany--str-not-empty 'r)
         (progn
-          ;; yep, got project root through projectile
-          (cmany--log "proj dir from projectile: %s" r)
-          (file-name-as-directory r))
-      (progn
-        ;; no deal; go up in the fs tree to find CMakeLists.txt
-        (setq r (locate-dominating-file (buffer-file-name) "CMakeLists.txt"))
-        (if (and r (not (string-equal r "")))
+          ;; we got project root through projectile
+          (setq r (file-name-as-directory r))
+          ;; check if there's a CMakeLists.txt there
+          (if (file-exists-p (concat r "CMakeLists.txt"))
+              (progn
+                ;; yep, this is what we want
+                (cmany--log "proj dir from projectile: %s" r)
+                (setq gotcml t)
+                )
             (progn
-              ;; yep, got project root through locate-dominating-file
+              (cmany--log "no CMakeLists.txt at proj dir from projectile: %s" r)
+              )
+            )
+          )
+      (progn
+        ;; projectile root not available; go up in the fs tree to find CMakeLists.txt
+        (setq r (file-truename (locate-dominating-file (buffer-file-name) "CMakeLists.txt")))
+        (if (cmany--str-not-empty 'r)
+            (progn
+              ;; yep, found a CMakeLists.txt
               (cmany--log "proj dir from locate-dominating-file: %s" r)
-              (file-name-as-directory r))
-          ;; otherwise, just use the current directory
-          (cmany--log "proj dir from current directory: %s"
-                      (file-name-directory (buffer-file-name)))
-          (file-name-directory (buffer-file-name)))
+              (setq r (file-name-as-directory r))
+              (setq gotcml t)
+              )
+          (progn
+            ;; otherwise, try the current directory
+            (setq r (file-name-directory (buffer-file-name)))
+            (if (file-exists-p (concat r "CMakeLists.txt"))
+                (progn
+                  (cmany--log "proj dir from current dir: %s" r)
+                  (setq gotcml t)
+                  )
+              (progn
+                (cmany--log "no CMakeLists.txt at current dir %s" r)
+                )
+              )
+            )
+          )
         )
       )
+    (when (not gotcml)
+      ;; Is r a subdir of any known cmany project?
+      (dolist (p (cmany--get-known-projects))
+        (let ((rel (file-relative-name r p)))
+          (cmany--log "is %s a subdir of %s? %s" r p rel)
+          (when (not (file-name-absolute-p rel))
+            (cmany--log "%s is a subdir of %s" r p)
+            (setq gotcml t)
+            )
+          )
+        )
+      (when (not gotcml)
+        (setq r nil)
+        )
+      )
+    (cmany--log "AQUI 2")
+    r ;; return the result
     )
   )
 
