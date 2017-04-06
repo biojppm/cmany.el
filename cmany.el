@@ -214,10 +214,32 @@ build trees."
 
 (defun cmany--mode-hook ()
   "called every time cmany-mode is set"
+  (message "mode-hook 0")
   (if cmany--with-global-mode
-      (cmany-restore-possibly)
-    (cmany-restore-or-guess)
+      (progn
+        (cmany--log "mode-hook 1")
+        (let* (
+               (b (buffer-name (current-buffer)))
+               (is-special (and (string-prefix-p "*" b) (string-suffix-p "*" b))))
+          (if is-special
+              (progn
+                (cmany--log "mode-hook 2.1: ignoring special buffer %s" b)
+                )
+            (progn
+              (cmany--log "mode-hook 2.2: (possibly) restoring from buffer %s" b)
+              (cmany-restore-possibly)
+              )
+            )
+          )
+        (cmany--log "mode-hook 4")
+        )
+    (progn
+      (cmany--log "mode-hook 5")
+      (cmany-restore-or-guess)
+      (cmany--log "mode-hook 6")
       )
+    )
+  (cmany--log "mode-hook 7")
   )
 
 (defun cmany--global-mode-hook ()
@@ -226,7 +248,7 @@ build trees."
   (setq cmany--with-global-mode t)
   (when (not cmany-proj-dir)
     (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
-    (cmany--log "                          . current dir %s" (pwd))
+    (cmany--log "                          . current file %s" (buffer-file-name))
     (cmany-mode 1)
     )
   )
@@ -237,7 +259,7 @@ build trees."
 ;; utility functions
 
 (defun cmany--log (fmt &rest args)
-  ;;(message (apply 'format (concat "cmany[%s]: " fmt "\n") (current-buffer) args))
+  (message (apply 'format (concat "cmany[%s]: " fmt) (current-buffer) args))
   (let ((b (current-buffer)))
     (with-current-buffer (get-buffer-create "*cmany*")
       ;;(end-of-buffer)
@@ -380,7 +402,9 @@ build trees."
           )
       (progn
         ;; projectile root not available; go up in the fs tree to find CMakeLists.txt
-        (setq r (file-truename (locate-dominating-file (buffer-file-name) "CMakeLists.txt")))
+        (when (buffer-file-name)
+          (setq r (file-truename (locate-dominating-file (buffer-file-name) "CMakeLists.txt")))
+        )
         (if (cmany--str-not-empty 'r)
             (progn
               ;; yep, found a CMakeLists.txt
@@ -390,8 +414,10 @@ build trees."
               )
           (progn
             ;; otherwise, try the current directory
-            (setq r (file-name-directory (buffer-file-name)))
-            (if (file-exists-p (concat r "CMakeLists.txt"))
+            (when (buffer-file-name)
+              (setq r (file-name-directory (buffer-file-name)))
+            )
+            (if (and r (file-exists-p (concat r "CMakeLists.txt")))
                 (progn
                   (cmany--log "proj dir from current dir: %s" r)
                   (setq gotcml t)
