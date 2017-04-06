@@ -470,7 +470,7 @@ build trees."
     ;;(if (not (boundp 'cmany--rtags-rdm))
     ;;    (progn
     ;;      (cmany--log "starting rdm")
-    ;;      (setq cmany--rtags-rdm (start-process "cmany-rtags-rdm" "*rdm*" "rdm")))
+    ;;      (setq cmany--rtags-rdm (start-process "cmany-rtags-rdm" "*RTags Log*" "rdm")))
     ;;  (progn (cmany--log "rdm is already running")))
     ;;)
     (rtags-start-process-unless-running)
@@ -487,7 +487,7 @@ build trees."
    )
   (when (and cmany-rtags-enabled (featurep 'rtags))
     (cmany-rtags-start)
-    (start-process (concat "cmany-rtags-rc" " " dir) "*rdm*" "rc" "-J" dir)
+    (start-process (concat "cmany-rtags-rc" " " dir) "*RTags Log*" "rc" "-J" dir)
     )
   )
 
