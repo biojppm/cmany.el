@@ -403,10 +403,6 @@ build trees."
 
 (defun cmany--guess-build-dir ()
   (interactive)
-  (let* ((pfx (concat cmany-proj-dir cmany-build-dir-prefix)) ;; the full path to the builds dir
-         (bds (cmany--get-cmany-lines "show_builds"))  ;; extract the list of current builds
-         (bdf (car bds)) ;; pick the first
-         (bd (concat pfx bdf)))
   (let* ((bds (cmany--get-cmany-lines "show_build_dirs"))  ;; extract the list of current builds
          (bd (car bds)) ;; pick the first
          )
