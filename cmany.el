@@ -717,7 +717,7 @@ build trees."
   (interactive)
   (if (cmany--str-not-empty 'cmany--last-configure)
       (cmany-configure cmany--last-configure)
-    (error "cmany-configure was not run yet")
+    (call-interactively 'cmany-configure)
     )
   )
 
@@ -748,7 +748,7 @@ build trees."
   (interactive)
   (if (cmany--str-not-empty 'cmany--last-build)
       (cmany-build cmany--last-build)
-    (error "cmany-build was not run yet")
+    (call-interactively 'cmany-build)
     )
   )
 
@@ -820,7 +820,7 @@ build trees."
   (interactive)
   (if (cmany--str-not-empty 'cmany--last-debug)
       (cmany-debug cmany--last-debug)
-    (error "cmany-debug was not run yet")
+    (call-interactively 'cmany-debug)
     )
   )
 
@@ -858,10 +858,9 @@ build trees."
 ;;;###autoload
 (defun cmany-run-again()
   (interactive)
-  (message "AGAIN")
   (if (cmany--str-not-empty 'cmany--last-run)
       (cmany-run cmany--last-run)
-    (error "cmany-run was not run yet")
+    (call-interactively 'cmany-debug)
     )
   )
 
