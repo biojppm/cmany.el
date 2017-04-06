@@ -963,32 +963,66 @@ form, build dir and active target"
   (call-interactively 'cmany-set-cmd)
   (call-interactively 'cmany-set-build-dir)
   (call-interactively 'cmany-set-target)
+  (call-interactively 'cmany-set-work-dir)
 
   (cmany-show-configuration "configuration from wizard")
+  )
+
+;;;###autoload
+(defun cmany-guess (&optional dir)
+  "automatic guesses the cmany params"
+  (interactive (list (cmany--guess-proj-dir)))
+  (cmany-set-proj-dir dir t)
+  (cmany-set-cmd cmany-cmd-default t)
+  (cmany-set-build-dir (cmany--guess-build-dir) t)
+  (cmany-set-target "" t)
+  (cmany-set-work-dir cmany-build-dir t)
+
+  (cmany-show-configuration "guessed configuration")
+  )
+
+;;;###autoload
+(defun cmany-restore-possibly ()
+  "make automatic guesses of the cmany params"
+  (interactive)
+  (cmany--log "cmany-restore-possibly: begin")
+  (cmany-load-configs-if-none)
+  (cmany--log "cmany-restore-possibly: configs loaded!")
+  (let ((dir (cmany--guess-proj-dir)))
+    (cmany--log "cmany-restore-possibly: guessed directory: %s" dir)
+    (if (cmany-restore-config dir)
+        (progn
+          (cmany--log "cmany-restore-possibly: restored configuration: %s" dir)
+          (cmany-show-configuration "restored configuration")
+          dir
+          )
+      (progn
+        (cmany--log "cmany-restore-possibly: no luck with dir: %s" dir)
+        nil
+        )
+      )
+    )
   )
 
 ;;;###autoload
 (defun cmany-restore-or-guess ()
   "make automatic guesses of the cmany params"
   (interactive)
-  (cmany--log "guessing configuration...")
-  (cmany-load-configs-if-none)
-  (cmany--log "configs loaded!")
-  (setq dir (cmany--guess-proj-dir))
-  (if (cmany-restore-config dir)
-      (progn
-        (cmany-show-configuration "restored configuration" t)
-        )
-    (progn
-      (cmany--log "really need to guess")
-      (cmany-set-proj-dir dir t)
+  (cmany--log "cmany-restore-or-guess: begin")
+  (let ((dir (cmany-restore-possibly)))
+    (when (not dir)
+      (cmany--log "cmany-restore-or-guess: really need to guess")
+      (cmany-set-proj-dir (cmany--guess-proj-dir) t)
+      (cmany--log "cmany-restore-or-guess: guess.1")
       (cmany-set-cmd cmany-cmd-default t)
+      (cmany--log "cmany-restore-or-guess: guess.2")
       (cmany-set-build-dir (cmany--guess-build-dir) t)
+      (cmany--log "cmany-restore-or-guess: guess.3")
       (cmany-set-target "" t)
-      (cmany-show-configuration "guessed configuration" t)
+      (cmany--log "cmany-restore-or-guess: guess.4")
+      (cmany-set-work-dir "" t)
+      (cmany-show-configuration "guessed configuration")
       )
     )
-  (cmany-show-configuration)
+  (cmany--log "cmany-restore-or-guess: end")
   )
-
-(provide 'cmany-mode)
