@@ -406,6 +406,7 @@ build trees."
   (let* ((bds (cmany--get-cmany-lines "show_build_dirs"))  ;; extract the list of current builds
          (bd (car bds)) ;; pick the first
          )
+    (setq bd (file-truename bd))
     (cmany--log "build directory guess: %s" bd)
     (file-name-as-directory bd)
     )
@@ -427,6 +428,7 @@ build trees."
          (bn (file-name-base dn))
          (result (ido-read-directory-name prompt dn bn nil bn))
          )
+    (setq result (file-truename result))
     (cmany--log "prompt for %s%s" prompt result)
     (file-name-as-directory result)
     )
@@ -439,6 +441,7 @@ build trees."
          (bn (file-name-base dn))
          (result (ido-read-directory-name prompt dn bn nil bn))
          )
+    (setq result (file-truename result))
     (cmany--log "prompt for %s%s" prompt result)
     (file-name-as-directory result)
     )
@@ -451,6 +454,7 @@ build trees."
          (bn (file-name-base dn))
          (result (ido-read-directory-name prompt dn bn nil bn))
          )
+    (setq result (file-truename result))
     (cmany--log "prompt for %s%s" prompt result)
     (file-name-as-directory result)
     )
