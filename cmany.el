@@ -196,10 +196,22 @@ build trees."
 ;;;###autoload
 (define-globalized-minor-mode global-cmany-mode
   cmany-mode
-  (lambda (arg)
-    (cmany-mode arg))
+  (lambda ()
+    (when (not cmany-proj-dir)
+      ;;(add-hook 'find-file-hook 'cmany-global-mode-open-file-hook)
+      (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
+      (cmany--log "                          . current dir %s" (pwd))
+      (cmany-mode 1)
+      )
+    )
   :group 'cmany
+  :keymap cmany-mode-map
   )
+
+(provide 'cmany-mode)
+(provide 'global-cmany-mode)
+
+
 
 ;;-----------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------
