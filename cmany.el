@@ -128,6 +128,7 @@ build trees."
 (defvar cmany-mode-map
    (let ((map (make-sparse-keymap)))
 
+     (define-key map (kbd "C-c m x ;") 'cmany-switch-proj)
      (define-key map (kbd "C-c m x !") 'cmany-restore-or-guess)
      (define-key map (kbd "C-c m x ?") 'cmany-wizard)
      (define-key map (kbd "C-c m x p") 'cmany-set-proj-dir)
@@ -176,6 +177,7 @@ build trees."
     ["Open shell: work dir"  cmany-shell-at-work         :keys "C-c m s w" :help "open a shell session at the current work directory"]
     "---"
     ("Project params"
+    ["Switch project"        cmany-switch-proj      :keys "C-c m x ;" :help "Open a previous project"]
     ["Restore or guess"      cmany-restore-or-guess :keys "C-c m x !" :help "Based on the current buffer, restore project parameters from a previous session, or guess if no session exists"]
     ["Wizard"                cmany-wizard           :keys "C-c m x ?" :help "Run an interactive prompt sequence to configure the project params"]
     ["Set project directory" cmany-set-proj-dir     :keys "C-c m x p" :help "Set the root of the current project"]
@@ -641,6 +643,15 @@ build trees."
   )
 
 ;;-----------------------------------------------------------------------------
+
+;;;###autoload
+(defun cmany-switch-proj ()
+  (interactive)
+  (let ((p (ido-completing-read "choose a project: " (cmany--get-known-projects))))
+    (when p (cmany-restore-config p))
+    )
+  )
+
 ;;;###autoload
 (defun cmany-set-proj-dir (&optional dir no-save)
   "set the project dir used by cmany"
