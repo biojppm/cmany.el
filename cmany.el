@@ -873,7 +873,7 @@ build trees."
   (let ((d default-directory))
     (cmany-save-configs)
     (cd cmany-build-dir)
-    (if (executable-find "ccmake")
+    (if (and nil (executable-find "ccmake"))
         (progn
           (cmany--log "editing cache via ccmake at %s" cmany-build-dir)
           (term-run "ccmake" (cmany--visit-buffer "*ccmake*") ".")
