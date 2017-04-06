@@ -611,21 +611,21 @@ build trees."
                 (setq cmany--last-configure (cdr (assoc "cmany--last-configure" c)))
                 (setq cmany--last-build (cdr (assoc "cmany--last-build" c)))
                 (setq cmany--last-debug (cdr (assoc "cmany--last-debug" c)))
+                (cmany--log "restore-config: end. found config for %s" dir)
                 t ;; return true to signal loaded config
                 )
             (progn
-              (cmany--log "restore-config: no config was found for %s" dir)
+              (cmany--log "restore-config: end. no config was found for %s" dir)
               nil ;; no config was found for this dir
               )
             )
           )
         )
     (progn
-      (cmany--log "restore-config: no configs available")
+      (cmany--log "restore-config: end. no configs available")
       nil ;; no configs are available
       )
     )
-  (cmany--log "restore-config: end: %s" dir)
   )
 
 (defun cmany--clear-last-commands ()
@@ -1041,20 +1041,19 @@ form, build dir and active target"
   (let ((dir (cmany--guess-proj-dir)))
     (cmany--log "cmany-restore-possibly: guessed directory: %s" dir)
     (let ((restore-ok  (cmany-restore-config dir)))
-      (if (cmany-restore-config dir)
+      (if restore-ok
           (progn
-            (cmany--log "cmany-restore-possibly: restored configuration: %s" dir)
             (cmany-show-configuration "restored configuration")
+            (cmany--log "cmany-restore-possibly: end. restored configuration: %s" dir)
             dir
             )
         (progn
-          (cmany--log "cmany-restore-possibly: no luck with dir: %s" dir)
+          (cmany--log "cmany-restore-possibly: end. no luck with dir: %s" dir)
           nil
           )
         )
       )
     )
-  (cmany--log "cmany-restore-possibly: end")
   )
 
 ;;;###autoload
