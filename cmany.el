@@ -387,9 +387,9 @@ build trees."
            (projectile-project-p))
       (setq r (file-truename (projectile-project-p)))
       )
-    (cmany--log "guess-proj-dir: after projectile: %s" r)
     (if (cmany--str-not-empty 'r)
         (progn
+          (cmany--log "guess-proj-dir: after projectile: %s" r)
           ;; we got project root through projectile
           (setq r (file-name-as-directory r))
           ;; check if there's a CMakeLists.txt there
@@ -405,9 +405,13 @@ build trees."
             )
           )
       (progn
+        (cmany--log "guess-proj-dir: after projectile: (no dir)")
         ;; projectile root not available; go up in the fs tree to find CMakeLists.txt
         (when (buffer-file-name)
-          (setq r (file-truename (locate-dominating-file (buffer-file-name) "CMakeLists.txt")))
+          (setq r (locate-dominating-file (buffer-file-name) "CMakeLists.txt"))
+          (when r
+            (setq r (file-truename r))
+            )
         )
         (if (cmany--str-not-empty 'r)
             (progn
