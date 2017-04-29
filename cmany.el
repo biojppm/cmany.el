@@ -142,14 +142,14 @@ build trees."
 
      (define-key map (kbd "C-c m A") 'cmany-rtags-announce-build-dir)
 
-     (define-key map (kbd "C-c m C") 'cmany-configure-with-prompt)
      (define-key map (kbd "C-c m c") 'cmany-configure)
-     (define-key map (kbd "C-c m B") 'cmany-build-with-prompt)
+     (define-key map (kbd "C-c m C") 'cmany-configure-with-prompt)
      (define-key map (kbd "C-c m b") 'cmany-build)
-     (define-key map (kbd "C-c m D") 'cmany-debug-with-prompt)
+     (define-key map (kbd "C-c m B") 'cmany-build-with-prompt)
      (define-key map (kbd "C-c m d") 'cmany-debug)
-     (define-key map (kbd "C-c m R") 'cmany-run-with-prompt)
+     (define-key map (kbd "C-c m D") 'cmany-debug-with-prompt)
      (define-key map (kbd "C-c m r") 'cmany-run)
+     (define-key map (kbd "C-c m R") 'cmany-run-with-prompt)
 
      (define-key map (kbd "C-c m e") 'cmany-edit-cache)
 
@@ -170,9 +170,9 @@ build trees."
     ["Configure w/prompt"    cmany-configure-with-prompt :keys "C-c m C"   :help "call cmany configure with interactive prompt for the configure command"]
     ["Build"                 cmany-build                 :keys "C-c m b"   :help "call cmany build"]
     ["Build w/prompt"        cmany-build-with-prompt     :keys "C-c m B"   :help "call cmany build with interactive prompt for the build command"]
-    ["Debug-again"           cmany-debug                 :keys "C-c m g"   :help "open a gdb session with the current target"]
-    ["Debug w/prompt"        cmany-debug-with-prompt     :keys "C-c m G"   :help "open a gdb session with the current target with interactive prompt for the build command"]
-    ["Run again"             cmany-run                   :keys "C-c m r"   :help "run the current active target"]
+    ["Debug"                 cmany-debug                 :keys "C-c m d"   :help "open a gdb session with the current target"]
+    ["Debug w/prompt"        cmany-debug-with-prompt     :keys "C-c m D"   :help "open a gdb session with the current target with interactive prompt for the build command"]
+    ["Run"                   cmany-run                   :keys "C-c m r"   :help "run the current active target"]
     ["Run w/prompt"          cmany-run-with-prompt       :keys "C-c m R"   :help "run the current active target with interactive prompt for the build command"]
     ["Edit cache"            cmany-edit-cache            :keys "C-c m e"   :help "edit the cmake cache of the current project"]
     ["Open shell: proj dir"  cmany-shell-at-proj         :keys "C-c m s p" :help "open a shell session at the current project directory"]
@@ -901,8 +901,14 @@ build trees."
   (if (and (eq status 'exit) (zerop code))
       (progn
         (let ((d default-directory))
+          (when (not (equal d cmany--dbg-work-dir))
+            (cmany--log "changing to directory %s" cmany--dbg-work-dir)
+            )
           (cd cmany--dbg-work-dir)
           (gdb cmany--dbg-cmd)
+          (when (not (equal d cmany--dbg-work-dir))
+            (cmany--log "returning to directory %s" d)
+            )
           (cd d)
           )
         )
