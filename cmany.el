@@ -212,29 +212,33 @@ build trees."
 (provide 'cmany-mode)
 (provide 'global-cmany-mode)
 
+(defun cmany--is-special-buffer (&optional bufname)
+  (when (not bufname)
+    (setq bufname (buffer-name (current-buffer)))
+    )
+  (or
+   (and (string-prefix-p "*" bufname) (string-suffix-p "*" bufname))
+   (and (string-prefix-p " *" bufname) (string-suffix-p "*" bufname))
+   )
+  )
+
 (defun cmany--mode-hook ()
   "called every time cmany-mode is set"
   (message "mode-hook 0")
   (if cmany--with-global-mode
       (progn
         (cmany--log "mode-hook 1")
-        (let* (
-               (b (buffer-name (current-buffer)))
-               (is-special (or
-                            (and (string-prefix-p "*" b) (string-suffix-p "*" b))
-                            (and (string-prefix-p " *" b) (string-suffix-p "*" b))
-                            ))
-               )
-          (if is-special
-              (progn
-                (cmany--log "mode-hook 2.1: ignoring special buffer %s" b)
-                )
+        (if (cmany--is-special-buffer)
             (progn
-              (cmany--log "mode-hook 2.2: (possibly) restoring from buffer %s" b)
+              (cmany--log "mode-hook 2.1: ignoring special buffer %s"
+                          (buffer-name (current-buffer)))
+              )
+            (progn
+              (cmany--log "mode-hook 2.2: (possibly) restoring from buffer %s"
+                          (buffer-name (current-buffer)))
               (cmany-restore-possibly)
               )
             )
-          )
         (cmany--log "mode-hook 4")
         )
     (progn
@@ -248,12 +252,19 @@ build trees."
 
 (defun cmany--global-mode-hook ()
   "called when global-cmany-mode is set"
-  (cmany--log "global cmany-mode? %s" (current-buffer))
+  (cmany--log "global cmany-mode? %s" (buffer-name (current-buffer)))
   (setq cmany--with-global-mode t)
-  (when (not cmany-proj-dir)
-    (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
-    (cmany--log "                          . current file %s" (buffer-file-name))
-    (cmany-mode 1)
+  (if (cmany--is-special-buffer)
+      (progn (cmany--log "no, buffer is special: %s"
+                         (buffer-name (current-buffer)))
+             )
+    (progn
+      (when (not cmany-proj-dir)
+        (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
+        (cmany--log "                          . current file %s" (buffer-file-name))
+        (cmany-mode 1)
+        )
+      )
     )
   )
 
@@ -378,7 +389,7 @@ build trees."
 (defun cmany--guess-proj-dir ()
   (let ((r "")
         (gotcml nil))
-    ;; if projectile is available, turned on and we're in a project,
+    ;; if projectile is available, turned on, and we're in a project,
     ;; get the current projectile project root
     (cmany--log "guess-proj-dir: begin")
     (when (and
@@ -643,7 +654,7 @@ build trees."
     (file-name-as-directory
      (ido-read-directory-name "cmake proj dir to restore: " (cmany--guess-proj-dir)))))
   (cmany--log "restore-config: begin: %s" dir)
-  (if (boundp 'cmany--configs)
+  (if (and dir (boundp 'cmany--configs))
       (progn
         (cmany--log "restore-config: configs available")
         (setq dir (file-truename dir))
@@ -670,7 +681,12 @@ build trees."
           )
         )
     (progn
-      (cmany--log "restore-config: end. no configs available")
+      (when (not dir)
+        (cmany--log "restore-config: end. no dir with CMakeLists.txt was found")
+        )
+      (when (not (boundp 'cmany--configs))
+        (cmany--log "restore-config: end. no configs available")
+        )
       nil ;; no configs are available
       )
     )
