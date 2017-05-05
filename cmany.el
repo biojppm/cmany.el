@@ -219,6 +219,8 @@ build trees."
   (or
    (and (string-prefix-p "*" bufname) (string-suffix-p "*" bufname))
    (and (string-prefix-p " *" bufname) (string-suffix-p "*" bufname))
+   (string-prefix-p "*magit" bufname)
+   (eq "COMMIT_EDITMSG" bufname)
    )
   )
 
