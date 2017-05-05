@@ -252,13 +252,14 @@ build trees."
 
 (defun cmany--global-mode-hook ()
   "called when global-cmany-mode is set"
-  (cmany--log "global cmany-mode? %s" (buffer-name (current-buffer)))
   (setq cmany--with-global-mode t)
   (if (cmany--is-special-buffer)
-      (progn (cmany--log "no, buffer is special: %s"
-                         (buffer-name (current-buffer)))
-             )
+      (progn
+        ;;(cmany--log "no, buffer is special: %s"
+        ;;            (buffer-name (current-buffer)))
+        )
     (progn
+      (cmany--log "global cmany-mode? %s" (buffer-name (current-buffer)))
       (when (not cmany-proj-dir)
         (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
         (cmany--log "                          . current file %s" (buffer-file-name))
@@ -662,16 +663,27 @@ build trees."
           (if c
               (progn
                 (cmany--log "restore-config: found config for %s: %s" dir c)
-                (cmany-set-proj-dir dir t)
-                (cmany-set-build-dir (cdr (assoc "cmany-build-dir" c)) t)
-                (cmany-set-target (cdr (assoc "cmany-target" c)) t)
-                (cmany-set-cmd (cdr (assoc "cmany-cmd" c)) t)
-                (cmany-set-work-dir (cdr (assoc "cmany-work-dir" c)) t)
-                (setq cmany--last-configure (cdr (assoc "cmany--last-configure" c)))
-                (setq cmany--last-build (cdr (assoc "cmany--last-build" c)))
-                (setq cmany--last-debug (cdr (assoc "cmany--last-debug" c)))
-                (cmany--log "restore-config: end. found config for %s" dir)
-                t ;; return true to signal loaded config
+                ;; does the build dir still exist?
+                (let ((prev-build-dir (cdr (assoc "cmany-build-dir" c))))
+                  (if (not (file-exists-p prev-build-dir))
+                      (progn
+                        (cmany--log "restore-config: cmany-build-dir not found: %s"
+                                    prev-build-dir)
+                        )
+                    (progn
+                      (cmany-set-proj-dir dir t)
+                      (cmany-set-build-dir (cdr (assoc "cmany-build-dir" c)) t)
+                      (cmany-set-target (cdr (assoc "cmany-target" c)) t)
+                      (cmany-set-cmd (cdr (assoc "cmany-cmd" c)) t)
+                      (cmany-set-work-dir (cdr (assoc "cmany-work-dir" c)) t)
+                      (setq cmany--last-configure (cdr (assoc "cmany--last-configure" c)))
+                      (setq cmany--last-build (cdr (assoc "cmany--last-build" c)))
+                      (setq cmany--last-debug (cdr (assoc "cmany--last-debug" c)))
+                      (cmany--log "restore-config: end. found config for %s" dir)
+                      t ;; return true to signal loaded config
+                      )
+                    )
+                  )
                 )
             (progn
               (cmany--log "restore-config: end. no config was found for %s" dir)
