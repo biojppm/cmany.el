@@ -1077,10 +1077,11 @@ build trees."
   (cmany--log "  cmany-work-dir: %s" cmany-work-dir)
   (cmany--log "----------------------------")
 
-  (message "cmany: %scurrent config: %s%s"
-           (if (cmany--str-not-empty 'msg) "" (format "%s: " msg))
+  (message "cmany: %scurrent config: %s --> %s%s"
+           (if (cmany--str-not-empty 'msg) (format "%s: " msg) "")
+           cmany-proj-dir
            cmany-build-dir
-           (if (string-equal cmany-target "") "" (format " [%s]" cmany-target))
+           (if (string-equal cmany-target "") (format " [%s]" cmany-target) "")
            )
   )
 
