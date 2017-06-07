@@ -6,32 +6,22 @@
 ;; Created:     2017-03-20
 ;; Version:     0.1
 ;; Keywords:    cmany, Cmake, IDE, Languages, Tools, rtags
-;; URL:         http://github.com/biojppm/cmany.el.git
+;; URL:         http://github.com/biojppm/cmany.el
 
 ;; This file is not part of GNU Emacs.
 
 ;; This file adds facilities to Emacs for interacting
 ;; with cmany (http://github.com/biojppm/cmany.git ).
 
-;; This extension is free software; you can redistribute it and/or modify it
-;; under the terms of the GNU General Public License as published by the Free
-;; Software Foundation; either version 3 of the License, or (at your option)
-;; any later version.
+;; This extension is licensed under the MIT License.
 ;;
-;; This extension is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-;; or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-;; for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program. If not, see <http://www.gnu.org/licenses/>.
-;;
-;; Visit <http://www.gnu.org/copyleft/gpl.html> for more information.
+;; You should have received a copy of the MIT License
+;; along with this program. If not, see <http://github.com/biojppm/cmany.el/blob/master/LICENSE.txt
 
 ;;; Depends:
 
 ;; cmany.el uses facilities from projectile and rtags, if they are
-;; available (via featurep). These are NOT hard dependencies.
+;; available (tested via featurep). These are NOT hard dependencies.
 ;; cmany.el has the following hard dependencies: term-run
 
 ;;; Install:
@@ -1006,6 +996,8 @@ build trees."
     (cmany-save-configs)
     (cd cmany-build-dir)
     (if (and nil (executable-find "ccmake"))
+        ;; this is temporarily disabled because emacs misbehaves with
+        ;; the curses interface. It needs to be investigated.
         (progn
           (cmany--log "editing cache via ccmake at %s" cmany-build-dir)
           (term-run "ccmake" (cmany--visit-buffer "*ccmake*") ".")
