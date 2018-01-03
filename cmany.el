@@ -36,8 +36,8 @@
 
 ;;; Install:
 
-;; Put this file along your Emacs-Lisp `load-path' and add the following
-;; into your ~/.emacs startup file.
+;; Put this file somewhere on your Emacs-Lisp `load-path' and add the
+;; following into your ~/.emacs startup file.
 ;;
 ;;      <at standards TAB position explain what lisp code is needed>
 ;;      (autoload 'example-install "example" "" t)
