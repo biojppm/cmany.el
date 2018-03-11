@@ -92,7 +92,7 @@ build trees."
   "The directory where the current active target should be debugged/run."
   )
 
-(defconst cmany-cmd-default "cmany {cmd} -E -c clang++ -t Debug {projdir} {target}"
+(defconst cmany-cmd-default "cmany {cmd} -E -c clang++ -X c++11 -t Debug {projdir} {target}"
   "The default value for cmany-cmd"
   )
 
@@ -117,20 +117,10 @@ build trees."
 (defvar cmany--with-global-mode nil
   ""
   )
+
 ;;-----------------------------------------------------------------------------
 (defvar cmany-mode-map
    (let ((map (make-sparse-keymap)))
-
-     (define-key map (kbd "C-c m x ;") 'cmany-switch-proj)
-     (define-key map (kbd "C-c m x !") 'cmany-restore-or-guess)
-     (define-key map (kbd "C-c m x ?") 'cmany-wizard)
-     (define-key map (kbd "C-c m x p") 'cmany-set-proj-dir)
-     (define-key map (kbd "C-c m x b") 'cmany-set-build-dir)
-     (define-key map (kbd "C-c m x w") 'cmany-set-work-dir)
-     (define-key map (kbd "C-c m x t") 'cmany-set-target)
-     (define-key map (kbd "C-c m x c") 'cmany-set-cmd)
-
-     (define-key map (kbd "C-c m A") 'cmany-rtags-announce-build-dir)
 
      (define-key map (kbd "C-c m c") 'cmany-configure)
      (define-key map (kbd "C-c m C") 'cmany-configure-with-prompt)
@@ -146,6 +136,17 @@ build trees."
      (define-key map (kbd "C-c m s p") 'cmany-shell-at-proj)
      (define-key map (kbd "C-c m s b") 'cmany-shell-at-build)
      (define-key map (kbd "C-c m s w") 'cmany-shell-at-work)
+
+     (define-key map (kbd "C-c m x ;") 'cmany-switch-proj)
+     (define-key map (kbd "C-c m x !") 'cmany-restore-or-guess)
+     (define-key map (kbd "C-c m x ?") 'cmany-wizard)
+     (define-key map (kbd "C-c m x p") 'cmany-set-proj-dir)
+     (define-key map (kbd "C-c m x b") 'cmany-set-build-dir)
+     (define-key map (kbd "C-c m x w") 'cmany-set-work-dir)
+     (define-key map (kbd "C-c m x t") 'cmany-set-target)
+     (define-key map (kbd "C-c m x c") 'cmany-set-cmd)
+
+     (define-key map (kbd "C-c m A") 'cmany-rtags-announce-build-dir)
 
      map)
    "Key map for the Emacs Lisp cmany environment."
@@ -164,21 +165,25 @@ build trees."
     ["Debug w/prompt"        cmany-debug-with-prompt     :keys "C-c m D"   :help "open a gdb session with the current target with interactive prompt for the build command"]
     ["Run"                   cmany-run                   :keys "C-c m r"   :help "run the current active target"]
     ["Run w/prompt"          cmany-run-with-prompt       :keys "C-c m R"   :help "run the current active target with interactive prompt for the build command"]
-    ["Edit cache"            cmany-edit-cache            :keys "C-c m e"   :help "edit the cmake cache of the current project"]
-    ["Open shell: proj dir"  cmany-shell-at-proj         :keys "C-c m s p" :help "open a shell session at the current project directory"]
-    ["Open shell: build dir" cmany-shell-at-build        :keys "C-c m s d" :help "open a shell session at the current build directory"]
-    ["Open shell: work dir"  cmany-shell-at-work         :keys "C-c m s w" :help "open a shell session at the current work directory"]
+    "---"
+    ("Utils"
+     ["Edit cache"            cmany-edit-cache               :keys "C-c m e"   :help "edit the cmake cache of the current project"]
+     ["Open shell: proj dir"  cmany-shell-at-proj            :keys "C-c m s p" :help "open a shell session at the current project directory"]
+     ["Open shell: build dir" cmany-shell-at-build           :keys "C-c m s d" :help "open a shell session at the current build directory"]
+     ["Open shell: work dir"  cmany-shell-at-work            :keys "C-c m s w" :help "open a shell session at the current work directory"]
+     ["rtags: directory"      cmany-rtags-announce-build-dir :keys "C-c m A" :help "Announce the cmany build directory to the rtags daemon"]
+     )
     "---"
     ("Project params"
-    ["Switch project"        cmany-switch-proj      :keys "C-c m x ;" :help "Open a previous project"]
-    ["Restore or guess"      cmany-restore-or-guess :keys "C-c m x !" :help "Based on the current buffer, restore project parameters from a previous session, or guess if no session exists"]
-    ["Wizard"                cmany-wizard           :keys "C-c m x ?" :help "Run an interactive prompt sequence to configure the project params"]
-    ["Set project directory" cmany-set-proj-dir     :keys "C-c m x p" :help "Set the root of the current project"]
-    ["Set build directory"   cmany-set-build-dir    :keys "C-c m x b" :help "Set the current build directory"]
-    ["Set target"            cmany-set-target       :keys "C-c m x t" :help "Set the current target"]
-    ["Set work directory"    cmany-set-work-dir     :keys "C-c m x w" :help "Set the current work directory"]
-    ["Set command"           cmany-set-cmd          :keys "C-c m x c" :help "Set the current cmany command"]
-    ["rtags: announce directory" cmany-rtags-announce-build-dir :keys "C-c m A" :help "Announce a build directory to the rtags daemon"])
+     ["Switch project"        cmany-switch-proj      :keys "C-c m x ;" :help "Open a previous project"]
+     ["Restore or guess"      cmany-restore-or-guess :keys "C-c m x !" :help "Based on the current buffer, restore project parameters from a previous session, or guess if no session exists"]
+     ["Wizard"                cmany-wizard           :keys "C-c m x ?" :help "Run an interactive prompt sequence to configure the project params"]
+     ["Set project directory" cmany-set-proj-dir     :keys "C-c m x p" :help "Set the root of the current project"]
+     ["Set build directory"   cmany-set-build-dir    :keys "C-c m x b" :help "Set the current build directory"]
+     ["Set target"            cmany-set-target       :keys "C-c m x t" :help "Set the current target"]
+     ["Set work directory"    cmany-set-work-dir     :keys "C-c m x w" :help "Set the current work directory"]
+     ["Set command"           cmany-set-cmd          :keys "C-c m x c" :help "Set the current cmany command"]
+     )
     )
   )
 
@@ -216,30 +221,30 @@ build trees."
 
 (defun cmany--mode-hook ()
   "called every time cmany-mode is set"
-  (message "mode-hook 0")
-  (if cmany--with-global-mode
-      (progn
-        (cmany--log "mode-hook 1")
-        (if (cmany--is-special-buffer)
-            (progn
-              (cmany--log "mode-hook 2.1: ignoring special buffer %s"
-                          (buffer-name (current-buffer)))
-              )
-            (progn
-              (cmany--log "mode-hook 2.2: (possibly) restoring from buffer %s"
-                          (buffer-name (current-buffer)))
-              (cmany-restore-possibly)
-              )
-            )
-        (cmany--log "mode-hook 4")
-        )
-    (progn
-      (cmany--log "mode-hook 5")
-      (cmany-restore-or-guess)
-      (cmany--log "mode-hook 6")
-      )
-    )
-  (cmany--log "mode-hook 7")
+  ;; (message "mode-hook 0")
+  ;; (if cmany--with-global-mode
+  ;;     (progn
+  ;;       (cmany--log "mode-hook 1")
+  ;;       (if (cmany--is-special-buffer)
+  ;;           (progn
+  ;;             (cmany--log "mode-hook 2.1: ignoring special buffer %s"
+  ;;                         (buffer-name (current-buffer)))
+  ;;             )
+  ;;           (progn
+  ;;             (cmany--log "mode-hook 2.2: (possibly) restoring from buffer %s"
+  ;;                         (buffer-name (current-buffer)))
+  ;;             (cmany-restore-possibly)
+  ;;             )
+  ;;           )
+  ;;       (cmany--log "mode-hook 4")
+  ;;       )
+  ;;   (progn
+  ;;     (cmany--log "mode-hook 5")
+  ;;     (cmany-restore-or-guess)
+  ;;     (cmany--log "mode-hook 6")
+  ;;     )
+  ;;   )
+  ;; (cmany--log "mode-hook 7")
   )
 
 (defun cmany--global-mode-hook ()
@@ -253,13 +258,14 @@ build trees."
     (progn
       (cmany--log "global cmany-mode? %s" (buffer-name (current-buffer)))
       (when (not cmany-proj-dir)
-        (cmany--log "enabling global cmany-mode. current buffer %s" (current-buffer))
-        (cmany--log "                          . current file %s" (buffer-file-name))
+        (cmany--log "enabling cmany-mode. current buffer %s" (current-buffer))
+        (cmany--log "                   . current file   %s" (buffer-file-name))
         (cmany-mode 1)
         )
       )
     )
   )
+
 
 ;;-----------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------
@@ -382,9 +388,9 @@ build trees."
 (defun cmany--guess-proj-dir ()
   (let ((r "")
         (gotcml nil))
+    (cmany--log "guess-proj-dir: begin")
     ;; if projectile is available, turned on, and we're in a project,
     ;; get the current projectile project root
-    (cmany--log "guess-proj-dir: begin")
     (when (and
            (featurep 'projectile)
            (bound-and-true-p projectile-mode)
@@ -499,7 +505,13 @@ build trees."
 (defun cmany--exec-prompt-proj-dir ()
   (interactive)
   (let* ((prompt "cmany proj dir: ")
-         (dn (file-name-directory (cmany--get-default-proj-dir)))
+         (dn (file-name-directory
+              (let* (pdg (cmany--get-default-proj-dir))
+                (if pdg
+                    (progn (cmany--log "using guessed %s for proj dir prompt" pdg) pdg)
+                    (progn (cmany--log "using current %s for proj dir prompt" (file-name-directory buffer-file-name))
+                           (file-name-directory buffer-file-name)))
+                )))
          (bn (file-name-base dn))
          (result (ido-read-directory-name prompt dn bn nil bn))
          )
@@ -968,11 +980,11 @@ build trees."
     )
   (if cmany-build-before-run
       (setq cmd (concat
-                 "cd " cmany-proj-dir " ; " (cmany--format-cmd "build" cmany-target)
-                 " && cd " workdir " ; " cmd
+                 "cd " cmany-proj-dir " && " (cmany--format-cmd "build" cmany-target)
+                 " && cd " workdir " && " cmd
                  )
             )
-    (setq cmd (concat "cd " workdir " ; "  cmd))
+    (setq cmd (concat "cd " workdir " && "  cmd))
     )
   (compile cmd)
   )
@@ -1084,18 +1096,24 @@ build trees."
   "interactively configure the cmany params: project dir, cmd
 form, build dir and active target"
   (interactive)
+  (cmany--log "wz aqui 0")
   (call-interactively 'cmany-set-proj-dir)
+  (cmany--log "wz aqui 1")
   (call-interactively 'cmany-set-cmd)
+  (cmany--log "wz aqui 2")
   (call-interactively 'cmany-set-build-dir)
+  (cmany--log "wz aqui 3")
   (call-interactively 'cmany-set-target)
+  (cmany--log "wz aqui 4")
   (call-interactively 'cmany-set-work-dir)
+  (cmany--log "wz aqui 5")
 
   (cmany-show-configuration "configuration from wizard")
   )
 
 ;;;###autoload
 (defun cmany-guess (&optional dir)
-  "make automatic guesses the cmany params"
+  "make automatic guesses of cmany params"
   (interactive (list (cmany--guess-proj-dir)))
   (when (not dir)
     (setq dir (cmany--guess-proj-dir)))
