@@ -75,6 +75,21 @@ build trees."
   :safe #'booleanp
   )
 
+(defcustom cmany-log-to-messages 1
+  "Whether cmany should log to the *messages* buffer."
+  :group 'cmany
+  :type 'boolean
+  :safe #'booleanp
+  )
+
+(defcustom cmany-log-to-buffer 1
+  "Whether cmany should log to a *cmany* buffer."
+  :group 'cmany
+  :type 'boolean
+  :safe #'booleanp
+  )
+
+
 ;;-----------------------------------------------------------------------------
 (defvar cmany-proj-dir nil
   "The directory where the current CMakeLists.txt project is located."
@@ -167,11 +182,11 @@ build trees."
     ["Run w/prompt"          cmany-run-with-prompt       :keys "C-c m R"   :help "run the current active target with interactive prompt for the build command"]
     "---"
     ("Utils"
+     ["rtags: directory"      cmany-rtags-announce-build-dir :keys "C-c m A" :help "Announce the cmany build directory to the rtags daemon"]
      ["Edit cache"            cmany-edit-cache               :keys "C-c m e"   :help "edit the cmake cache of the current project"]
      ["Open shell: proj dir"  cmany-shell-at-proj            :keys "C-c m s p" :help "open a shell session at the current project directory"]
      ["Open shell: build dir" cmany-shell-at-build           :keys "C-c m s d" :help "open a shell session at the current build directory"]
      ["Open shell: work dir"  cmany-shell-at-work            :keys "C-c m s w" :help "open a shell session at the current work directory"]
-     ["rtags: directory"      cmany-rtags-announce-build-dir :keys "C-c m A" :help "Announce the cmany build directory to the rtags daemon"]
      )
     "---"
     ("Project params"
@@ -212,7 +227,7 @@ build trees."
     (setq bufname (buffer-name (current-buffer)))
     )
   (or
-   (and (string-prefix-p "*" bufname) (string-suffix-p "*" bufname))
+   (and (string-prefix-p  "*" bufname) (string-suffix-p "*" bufname))
    (and (string-prefix-p " *" bufname) (string-suffix-p "*" bufname))
    (string-prefix-p "*magit" bufname)
    (eq "COMMIT_EDITMSG" bufname)
@@ -256,7 +271,9 @@ build trees."
         ;;            (buffer-name (current-buffer)))
         )
     (progn
-      (cmany--log "global cmany-mode? %s" (buffer-name (current-buffer)))
+      (cmany--log "global cmany-mode? %s (proj-dir=%s)"
+                  (buffer-name (current-buffer))
+                  cmany-proj-dir)
       (when (not cmany-proj-dir)
         (cmany--log "enabling cmany-mode. current buffer %s" (current-buffer))
         (cmany--log "                   . current file   %s" (buffer-file-name))
@@ -273,12 +290,23 @@ build trees."
 ;; utility functions
 
 (defun cmany--log (fmt &rest args)
-  (message (apply 'format (concat "cmany[%s]: " fmt) (current-buffer) args))
-  (let ((b (current-buffer)))
-    (with-current-buffer (get-buffer-create "*cmany*")
-      ;;(end-of-buffer)
-      (insert (apply 'format (concat "cmany[%s]: " fmt "\n") b args))
+  (if cmany-log-to-messages
+      (message
+       (apply 'format
+              (concat "cmany[%s]: " fmt)
+              (current-buffer)
+              args))
       )
+  (if cmany-log-to-buffer
+      (let ((b (current-buffer)))
+        (with-current-buffer (get-buffer-create "*cmany*")
+          ;;(end-of-buffer)
+          (insert
+           (apply 'format
+                  (concat "cmany[%s]: " fmt "\n")
+                  b args))
+          )
+        )
     )
   )
 
